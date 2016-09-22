@@ -1,0 +1,24 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="Resume" content="Epitone's Resume">
+    <title>Epitone's Resume</title>
+  </head>
+  <body>
+  <p><h1>Epitone's Resume</h1><br>
+    <h2><a href="mailto:unxsung@hotmail.com">unxsung@hotmail.com</a></h2>
+    Phone number: 551-233-9232
+     <section>
+  <h1>Education</h1>
+  <p>Pennsylvania State University</p>
+</section> 
+    <section>
+      <h1>Employment History</h1>
+      <p>Loews Corporation</p>
+  <address>
+  Written by <a href="mailto:webmaster@example.com">Jon   Doe</a>.<br> Visit us at:<br>Example.com<br> Box 564, Disneyland<br>USA
+  </address> 
+  </body>
+</html>
+
