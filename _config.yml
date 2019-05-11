@@ -1,0 +1,23 @@
+# Site settings
+title: Inarticulate Things
+email: contact@kaypeter.com 
+description: > #
+url: "https://kaypeter.com" 
+twitter_username: kaypeter87
+github_username: kaypeter87
+stackoverflow_link: /users/7087553/peter-kay
+
+permalink: /:categories/:year/:month/:day/:title/
+contenturl: "blog/content/"
+# Build settings
+markdown: kramdown
+theme: minima
+plugins:
+  - jekyll-feed
+
+# Exclude from processing.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - LICENSE
+  - README.md
