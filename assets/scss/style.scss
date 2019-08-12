@@ -86,7 +86,7 @@ blockquote {
 }
 
 a {
-  color: #88c0d0;
+  color: #d0e6ec;
   text-decoration: none;
   border: none;
   transition-property: color;
@@ -94,7 +94,7 @@ a {
   transition-timing-function: ease-out;
 
   &:hover {
-    color: $text;
+    color: #fff;
     text-shadow: 0 0 1px $text;
   }
 }
