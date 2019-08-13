@@ -1,5 +1,6 @@
 [build]
 command = "hugo --gc --themesDir themes/"
+publish = "public"
 
 [context.production.environment]
 HUGO_VERSION = "0.56.3"
