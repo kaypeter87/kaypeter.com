@@ -1,5 +1,4 @@
 [build]
-base = "kaypeter.com"
 publish = "kaypeter.com/public"
 command = "hugo --gc --themesDir themes/"
 
