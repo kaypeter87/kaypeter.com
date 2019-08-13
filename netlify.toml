@@ -1,5 +1,5 @@
 [build]
-publish = "kaypeter.com/public"
+publish = "public"
 command = "hugo --gc --themesDir themes/"
 
 [build.environment]
