@@ -1,5 +1,5 @@
 +++
-title = "Who am I?"
+title = "$ whoami"
 date = "2019-08-13"
 +++
 
