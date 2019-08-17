@@ -1,5 +1,7 @@
 # kaypeter.com
 
+https://kaypeter.com
+
 ## Hugo
 
 This is the site content for kaypeter.com. It is currently rendered via Hugo and
