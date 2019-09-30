@@ -12,3 +12,4 @@ environment.
 1. [Introduction](/sections/archlinux/introduction)
 2. Getting Started
 3. Installation
+4. Configuration
