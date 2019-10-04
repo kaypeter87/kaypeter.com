@@ -14,3 +14,4 @@ environment.
 3. Installation
 4. Configuration
 5. Basic Usage
+6. Advanced Configuration
