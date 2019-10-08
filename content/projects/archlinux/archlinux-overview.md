@@ -15,3 +15,4 @@ environment.
 4. Configuration
 5. Basic Usage
 6. Advanced Configuration
+7. Other
