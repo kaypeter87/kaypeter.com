@@ -5,8 +5,14 @@ draft: false
 ---
 
 This project will go through my experience on installing and configuring an
-Arch Linux system and how I interpret how it should look/function. I've been a
+Arch Linux system and how I interpret what it should look like/function. I've been a
 big Windows user for a long time during my career and have worked in mixed
 Linux/Windows environments. I recently made the switch to use Linux as my main
 Operating System (OS) driver in 2017 to optimize my workflow both at home and at
 Stack Overflow.
+
+One of the main reasons for switching to Linux is to avoid being trapped by Windows Update.
+With Linux and running Windows as a Virtual Machine (VM), I'm able to avoid having to wait
+for my system to finish updating to actually use it. This was a huge gain in efficiency for 
+me and is why I gravitated to using Linux as my main OS. 
+
