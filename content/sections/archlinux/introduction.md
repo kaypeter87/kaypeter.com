@@ -14,5 +14,9 @@ Stack Overflow.
 One of the main reasons for switching to Linux is to avoid being trapped by Windows Update.
 With Linux and running Windows as a Virtual Machine (VM), I'm able to avoid having to wait
 for my system to finish updating to actually use it. This was a huge gain in efficiency for 
-me and is why I gravitated to using Linux as my main OS. 
+me and is why I gravitated to using Linux as my main OS.
 
+In this series of posts, I will go through what I did and provide what resources I used to make it happen.
+A big part of this was scouring documentation and it can be very daunting at first. But hopefully 
+these posts will alleviate some of the pain in getting Arch Linux up and running as your
+main OS.
