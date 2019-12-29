@@ -21,4 +21,6 @@ A big part of this was scouring documentation and it can be very daunting at fir
 these posts will alleviate some of the pain in getting Arch Linux up and running as your
 main OS.
 
-[Previous](/projects/archlinux/archlinux-overview)
+[previous](/projects/archlinux/archlinux-overview)
+
+[next](/sections/archlinux/gettingstarted)
