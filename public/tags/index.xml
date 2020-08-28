@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on My New Hugo Site</title>
+    <link>http://example.org/tags/</link>
+    <description>Recent content in Tags on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 13 Aug 2019 14:12:11 -0400</lastBuildDate>
+    
+	<atom:link href="http://example.org/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>intro</title>
+      <link>http://example.org/tags/intro/</link>
+      <pubDate>Tue, 13 Aug 2019 14:12:11 -0400</pubDate>
+      
+      <guid>http://example.org/tags/intro/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>software</title>
+      <link>http://example.org/tags/software/</link>
+      <pubDate>Tue, 13 Aug 2019 14:12:11 -0400</pubDate>
+      
+      <guid>http://example.org/tags/software/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>stackoverflow</title>
+      <link>http://example.org/tags/stackoverflow/</link>
+      <pubDate>Tue, 13 Aug 2019 14:12:11 -0400</pubDate>
+      
+      <guid>http://example.org/tags/stackoverflow/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>sysadmin</title>
+      <link>http://example.org/tags/sysadmin/</link>
+      <pubDate>Tue, 13 Aug 2019 14:12:11 -0400</pubDate>
+      
+      <guid>http://example.org/tags/sysadmin/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

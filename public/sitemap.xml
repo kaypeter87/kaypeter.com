@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>http://example.org/post/hello/</loc>
+    <lastmod>2020-08-27T21:25:17-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/</loc>
+    <lastmod>2020-08-27T21:25:17-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/post/</loc>
+    <lastmod>2020-08-27T21:25:17-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/post/hello-all/</loc>
+    <lastmod>2019-08-13T14:12:11-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/tags/intro/</loc>
+    <lastmod>2019-08-13T14:12:11-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/tags/software/</loc>
+    <lastmod>2019-08-13T14:12:11-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/tags/stackoverflow/</loc>
+    <lastmod>2019-08-13T14:12:11-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/tags/sysadmin/</loc>
+    <lastmod>2019-08-13T14:12:11-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/tags/</loc>
+    <lastmod>2019-08-13T14:12:11-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://example.org/categories/</loc>
+  </url>
+  
+</urlset>
