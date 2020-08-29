@@ -36,12 +36,7 @@ module.exports = {
         icon: `stack-overflow`,
         url: `https://stackoverflow.com/users/7087553/peter-kay`,
         altText: `stack overflow`
-      },
-      {
-        icon: `faRss`,
-        url: `https://stackoverflow.com/users/7087553/peter-kay`,
-        altText: `stack overflow`
-      },
+      }
     ]
   },
   plugins: [
