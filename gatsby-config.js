@@ -13,7 +13,12 @@ module.exports = {
     twitterCreator: 'https://twitter.com/kaypeter87', // website account on twitter
     social: [
       {
-        icon: `at`,
+        icon: `linux`,
+        url: `https://kaypeter.com/whoami`,
+        altText: `whoami`
+      },
+      {
+        icon: `envelope`,
         url: `mailto:contact@kaypeter.com`,
         altText: `email me!`
       },
@@ -31,7 +36,12 @@ module.exports = {
         icon: `stack-overflow`,
         url: `https://stackoverflow.com/users/7087553/peter-kay`,
         altText: `stack overflow`
-      }
+      },
+      {
+        icon: `faRss`,
+        url: `https://stackoverflow.com/users/7087553/peter-kay`,
+        altText: `stack overflow`
+      },
     ]
   },
   plugins: [
@@ -67,7 +77,7 @@ module.exports = {
         name: `Chronoblog Gatsby Theme`,
         short_name: `Chronoblog`,
         start_url: `/`,
-        background_color: `#fff`,
+        background_color: '#eceff4',
         theme_color: `#3a5f7d`,
         display: `standalone`,
         icon: `src/assets/favicon.png`
@@ -75,6 +85,88 @@ module.exports = {
     },
     {
       resolve: `gatsby-plugin-sitemap`
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `posts`,
+        path: `${__dirname}/content/posts/`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `notes`,
+        path: `${__dirname}/content/notes/`,
+      },
+    },
+    {
+      resolve: `gatsby-transformer-remark`,
+      options: {
+        // CommonMark mode (default: true)
+        commonmark: true,
+        // Footnotes mode (default: true)
+        footnotes: true,
+        // Pedantic mode (default: true)
+        pedantic: true,
+        // GitHub Flavored Markdown mode (default: true)
+        gfm: true,
+        // Plugins configs
+        plugins: [],
+      },
+    },
+    {
+      resolve: `gatsby-plugin-feed`,
+      options: {
+        query: `
+          {
+            site {
+              siteMetadata {
+                siteTitle
+                siteDescription
+                siteUrl
+                site_url: siteUrl
+              }
+            }
+          }
+        `,
+        feeds: [
+          {
+            serialize: ({ query: { site, allMarkdownRemark } }) => {
+              return allMarkdownRemark.edges.map(edge => {
+                return Object.assign({}, edge.node.frontmatter, {
+                  description: edge.node.excerpt,
+                  date: edge.node.frontmatter.date,
+                  url: site.siteMetadata.siteUrl + edge.node.fields.slug,
+                  guid: site.siteMetadata.siteUrl + edge.node.fields.slug,
+                  custom_elements: [{ "content:encoded": edge.node.html }],
+                })
+              })
+            },
+            query: `
+              {
+                allMarkdownRemark(
+                  sort: { order: DESC, fields: [frontmatter___date] },
+                ) {
+                  edges {
+                    node {
+                      excerpt
+                      html
+                      fields { slug }
+                      frontmatter {
+                        title
+                        date
+                      }
+                    }
+                  }
+                }
+              }
+            `,
+            output: "/rss.xml",
+            title: "Your Site's RSS Feed",
+          },
+        ],
+      },
     },
     {
       resolve: `gatsby-plugin-google-analytics`,

@@ -1,6 +1,6 @@
 ---
 title: "$ whoami"
-date: 2019-08-13
+date: 2020-08-28
 tags: ['post', 'introduction']
 ---
 

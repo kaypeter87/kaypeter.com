@@ -4,7 +4,7 @@ const buttonHover = {
   '&:hover': {
     opacity: 0.8,
     cursor: 'pointer',
-    boxShadow: (theme) => `inset 0 0 0 1px ${theme.colors.secondary}`
+    boxShadow: (theme) => `inset 0 0 0 2px ${theme.colors.secondary}`
   }
 };
 
