@@ -1,32 +1,36 @@
 module.exports = {
   siteMetadata: {
     siteTitle: 'Peter Kay',
-    siteDescription: 'Monkey Engineering',
+    siteDescription: 'Software Kimchineering',
     siteImage: '/banner.png', // main image of the site for metadata
     siteUrl: 'https://kaypeter.com/',
     pathPrefix: '/',
     siteLanguage: 'en',
     ogLanguage: `en_US`,
     author: 'Peter Kay', // for example - 'Ivan Ganev'
-    authorDescription: 'I monkey patch a bunch of stuff', // short text about the author
+    authorDescription: 'Just figuring things out with a computer.', // short text about the author
     avatar: '/avatar.jpg',
     twitterCreator: 'https://twitter.com/kaypeter87', // website account on twitter
     social: [
       {
         icon: `at`,
-        url: `mailto:contact@kaypeter.com`
+        url: `mailto:contact@kaypeter.com`,
+        altText: `email me!`
       },
       {
         icon: `twitter`,
-        url: `https://twitter.com/kaypeter87`
+        url: `https://twitter.com/kaypeter87`,
+        altText: `twitter`
       },
       {
         icon: `github-alt`,
-        url: `https://github.com/kaypeter87`
+        url: `https://github.com/kaypeter87`,
+        altText: `github`
       },
       {
-        icon: `stackoverflow`,
-        url: `https://stackoverflow.com/7087553/peter-kay`
+        icon: `stack-overflow`,
+        url: `https://stackoverflow.com/users/7087553/peter-kay`,
+        altText: `stack overflow`
       }
     ]
   },

@@ -13,20 +13,20 @@ export default {
   initialColorMode: 'dark',
   colors: {
     ...chronoblogTheme.color,
-    text: '#111',
-    background: '#fdfdfd',
-    link: '#155045',
-    primary: '#104c4e',
-    secondary: '#1B6A6D',
-    muted: '#d5dedb',
+    text: '#2e3440',
+    background: '#eceff4',
+    link: '#bf616a',
+    primary: '#a3be8c',
+    secondary: '#b48ead',
+    muted: '#d8dee9',
     modes: {
       ...chronoblogTheme.colors.modes,
       dark: {
         ...chronoblogTheme.colors.modes.dark,
-        text: '#eaeaea',
-        background: '#080c0a',
-        link: '#2e8877',
-        muted: '#161d1c'
+        text: '#e5e9f0',
+        background: '#2e3440',
+        link: '#81a1c1',
+        muted: '#3b4252'
       }
     }
   },
