@@ -13,11 +13,6 @@ module.exports = {
     twitterCreator: 'https://twitter.com/kaypeter87', // website account on twitter
     social: [
       {
-        icon: `linux`,
-        url: `https://kaypeter.com/whoami`,
-        altText: `whoami`
-      },
-      {
         icon: `envelope`,
         url: `mailto:contact@kaypeter.com`,
         altText: `email me!`
