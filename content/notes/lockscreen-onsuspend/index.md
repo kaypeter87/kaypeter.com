@@ -22,8 +22,11 @@ resumes from suspend.
 
 ![suspend-issue](img/suspendgif.gif)
 
-Kind of annoying behavior, especially if someone opens your laptop, they'd be
-able to look at what you were doing, albeit for a second.
+Kind of annoying behavior, especially if someone opens your laptop. They'd be
+able to look at what you were doing before the suspend, albeit for a second. So I started digging
+through ${insert your favorite search engine} for clues on what is causing this
+issue.
 
-
+The betterlockscreen [AUR]() package installs not only the binary, but also the
+systemd unit file whose sole purpose is to lock on suspend/sleep.
 
