@@ -19,7 +19,7 @@ while now and really liked the aesthetics. But one thing that's been bothering m
 the issue of the desktop being visible for a split second after the laptop
 resumes from suspend.
 
-![suspend-issue](img/suspendgif.gif)
+![suspend-issue](./img/suspendgif.gif)
 
 Kind of annoying behavior, especially if someone opens your laptop. They'd be
 able to look at what you were doing before the suspend, albeit for a second. So I started digging
