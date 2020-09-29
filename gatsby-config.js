@@ -40,7 +40,6 @@ module.exports = {
     ]
   },
   plugins: [
-    `gatsby-plugin-sharp`,
     {
       resolve: 'gatsby-theme-chronoblog',
       options: {
@@ -108,11 +107,7 @@ module.exports = {
         // GitHub Flavored Markdown mode (default: true)
         gfm: true,
         // Plugins configs
-        plugins: [
-          `gatsby-remark-images`,
-          `gatsby-remark-static-images`,
-          `gatsby-remark-copy-linked-files`
-        ],
+        plugins: [],
       },
     },
     {
