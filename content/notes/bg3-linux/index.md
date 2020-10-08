@@ -42,6 +42,8 @@ on Steam.
 
 ## Errors galore
 
+Steam uses Proton, which is a fork of Wine, to allow Linux users to run games not supported natively on Linux. So I was confident that BG3 would work. Or so I thought...
+
 I've been using the RAD drivers for a while now and all the games on Steam seemed to work, but when I tried to launch
 BG3 on Steam, I'd get a bunch of errors:
 
