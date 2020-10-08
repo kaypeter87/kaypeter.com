@@ -35,7 +35,7 @@ I am running the following specs:
 - GPU: `AMD Radeon VII`
 - OS:  `Arch Linux - 5.8.13-arch1-1`
 
-To be upfront, I've only tested this only on an AMD GPU but the process should
+To be upfront, I've only tested this on an AMD GPU but the process should
 be the same for NVIDIA GPUs. Also as a note, I've bought and installed the early access version
 on Steam.
 
@@ -87,20 +87,24 @@ Unhandled exception. System.Runtime.InteropServices.SEHException (0x80004005): E
    at LariLauncher.App.Main()
 ```
 
-## The Workaround
 
 Judging by what's being thrown, it seems to be an issue with the launcher on steam and Wine. So instead, I tried running Wine directly to see if I can bypass the Launcher:
 
 ```
-> wine --version
+# Current Wine version I'm using
+wine --version
 wine-5.18 (Staging)
 
-> wine /datassd/Games/SteamLibrary/steamapps/common/Baldurs\ Gate\ 3/bin/bg3.exe
+# This runs BG3 with Wine directly
+wine /datassd/Games/SteamLibrary/steamapps/common/Baldurs\ Gate\ 3/bin/bg3.exe
 ```
 
 But the game would crash and would give me an error complaining about Vulkan. So I referenced the [Vulkan](https://wiki.archlinux.org/index.php/Vulkan) wiki page on Arch Linux and tried the AMDVLK Open Source drivers to see if that would work.
 
 ```
+# Remove the RAD driver
+# There is a way to have both drivers installed simultaneously
+# You can read up on it in the Arch Wiki
 sudo pacman -Rns vulkan-radeon
 sudo pacman -S amdvlk
 ```
@@ -115,7 +119,7 @@ sudo pacman -S nvidia-utils
 
 ## Steam Launcher issue
 
-So I've played around with `winetricks` to see if I could get the Steam Launcher working for BG3 by downloading the latest dotnet framework, but all of my attempts failed with a bunch of errors since `winetricks` invoke 32-bit libraries and my system is 64-bit. The dotnet48 was able to finish installing, but the launcher still doesn't work. I'll have to dig into the errors and do some research on this. If I get to a working solution, I'll go ahead and add another note to my blog.
+So I've played around with `winetricks` to see if I could get the Steam Launcher working for BG3 by downloading the latest dotnet framework, but all of my attempts failed with a bunch of errors since `winetricks` invoke 32-bit libraries and my system is 64-bit. The dotnet48 package was able to finish installing, but the launcher still doesn't work. I'll have to dig into the errors and do some research on this. If I get to a working solution, I'll go ahead and add another note to my blog.
 
 ## Rejoice!
 
