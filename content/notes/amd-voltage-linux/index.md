@@ -8,4 +8,4 @@ draft: true
 ### AMD is too damn hot
 
 I bought an AMD Radeon VII 6 months ago to upgrade from my NVIDIA GTX 970 and I
-have been enjoying the performance boost.
+have been enjoying the performance boost so far.
