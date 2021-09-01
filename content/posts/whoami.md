@@ -4,7 +4,7 @@ date: 2020-08-28
 tags: ['post', 'introduction']
 ---
 
-My name is Peter Kay, I'm a Senior Site Reliability Engineer at [Flatiron
+My name is Peter Kay, I'm a Staff Site Reliability Engineer at [Flatiron
 Health](https://flatiron.com). Before that, I was an SRE at [Stack Overflow](https://stackoverflow.com). My days consist of
 writing code, being a husband, a sysadmin, failing horribly in networking, and
 experimenting with my home lab. I am a firm believer in open source and its
