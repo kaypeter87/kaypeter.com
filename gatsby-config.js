@@ -2,13 +2,13 @@ module.exports = {
   siteMetadata: {
     siteTitle: 'Peter Kay',
     siteDescription: 'Software Kimchineering',
-    siteImage: '/banner.png', // main image of the site for metadata
+    siteImage: '', // main image of the site for metadata
     siteUrl: 'https://kaypeter.com/',
     pathPrefix: '/',
     siteLanguage: 'en',
     ogLanguage: `en_US`,
     author: 'Peter Kay', // for example - 'Ivan Ganev'
-    authorDescription: 'Just figuring things out with a computer.', // short text about the author
+    authorDescription: 'I write software that makes software reliable.', // short text about the author
     avatar: '/avatar.jpg',
     twitterCreator: 'https://twitter.com/kaypeter87', // website account on twitter
     social: [
