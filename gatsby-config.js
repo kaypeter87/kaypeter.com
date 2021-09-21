@@ -1,7 +1,7 @@
 module.exports = {
   siteMetadata: {
     siteTitle: 'Peter Kay',
-    siteDescription: 'Software Kimchineering',
+    siteDescription: 'Figuring things out with a computer.',
     siteImage: '', // main image of the site for metadata
     siteUrl: 'https://kaypeter.com/',
     pathPrefix: '/',
