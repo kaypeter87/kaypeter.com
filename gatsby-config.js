@@ -31,12 +31,12 @@ module.exports = {
         icon: `stack-overflow`,
         url: `https://stackoverflow.com/users/7087553/peter-kay`,
         altText: `stack overflow`
-      },
-      {
-        icon: `linkedin`,
-        url: `https://www.linkedin.com/in/peterkay87`,
-        altText: `LinkedIn`
       }
+//      {
+//        icon: `linkedin`,
+//        url: `https://www.linkedin.com/in/peterkay87`,
+//        altText: `LinkedIn`
+//      }
     ]
   },
   plugins: [
