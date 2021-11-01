@@ -17,4 +17,4 @@ I also believe strongly in sharing the what, why, and how. Sharing the choices a
 will hopefully help solve the problems we encounter tomorrow.
 
 If you're still reading up to this part, thanks for hearing what I have to say. I hope you get something
-out of my random thoughts :smile:
+out of my random thoughts 😄
