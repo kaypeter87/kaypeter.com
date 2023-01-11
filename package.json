@@ -23,7 +23,7 @@
     "gatsby-plugin-sitemap": "^2.2.21",
     "gatsby-source-filesystem": "^2.3.27",
     "gatsby-theme-chronoblog": "^0.24.0",
-    "gatsby-transformer-remark": "^2.8.31",
+    "gatsby-transformer-remark": "^5.25.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0"
   },
