@@ -1,9 +1,13 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Landing() {
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center font-serif selection:bg-primary selection:text-primary-foreground">
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center font-serif selection:bg-primary selection:text-primary-foreground relative">
+      <div className="absolute top-6 right-6 md:top-8 md:right-8">
+        <ThemeToggle />
+      </div>
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

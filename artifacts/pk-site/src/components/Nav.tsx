@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Nav() {
   return (
@@ -12,6 +13,8 @@ export function Nav() {
         <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>
         <span className="text-muted-foreground/30">&middot;</span>
         <Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link>
+        <span className="text-muted-foreground/30">&middot;</span>
+        <ThemeToggle className="-mr-2" />
       </div>
     </nav>
   );
