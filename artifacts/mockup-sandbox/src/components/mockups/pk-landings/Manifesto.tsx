@@ -52,7 +52,7 @@ export function Manifesto() {
 
       <div className="flex flex-col items-center max-w-4xl mx-auto w-full z-10 font-serif">
         <motion.div 
-          className={\`flex flex-wrap justify-center items-center text-center \${isTypingComplete ? 'animate-breathe' : ''}\`}
+          className={`flex flex-wrap justify-center items-center text-center ${isTypingComplete ? 'animate-breathe' : ''}`}
           variants={container}
           initial="hidden"
           animate="visible"
@@ -69,7 +69,7 @@ export function Manifesto() {
               </motion.span>
             ))}
             <motion.span 
-              className={\`inline-block w-[2px] h-[0.8em] bg-[#f0ebd8] ml-1 align-middle \${isTypingComplete ? 'opacity-0 transition-opacity duration-1000' : 'animate-blink'}\`}
+              className={`inline-block w-[2px] h-[0.8em] bg-[#f0ebd8] ml-1 align-middle ${isTypingComplete ? 'opacity-0 transition-opacity duration-1000' : 'animate-blink'}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
