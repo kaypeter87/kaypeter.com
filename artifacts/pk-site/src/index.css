@@ -114,8 +114,8 @@
   --chart-4: 46 42% 89%;
   --chart-5: 222 44% 9%;
 
-  --app-font-sans: "utopia-std", "Source Han Serif K", Georgia, serif;
-  --app-font-serif: "utopia-std", "Source Han Serif K", Georgia, serif;
+  --app-font-sans: "kit-rounded-mono", "Source Han Serif K", Georgia, serif;
+  --app-font-serif: "kit-rounded-mono", "Source Han Serif K", Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0rem;
   
