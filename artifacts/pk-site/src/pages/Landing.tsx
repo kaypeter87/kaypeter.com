@@ -141,15 +141,16 @@ function ShootingStars() {
     let timer: number;
 
     const spawn = () => {
-      // Any direction across the full 360° — each meteor picks its own angle.
-      const angleDeg = Math.random() * 360;
+      // Always travel diagonally from upper-left toward lower-right, with a
+      // small random spread so successive meteors aren't perfectly parallel.
+      const angleDeg = 18 + Math.random() * 18; // 18°-36° below horizontal
       const angleRad = (angleDeg * Math.PI) / 180;
       const distance = 60 + Math.random() * 40;
       const length = 80 + Math.random() * 90;
       const s: Shooter = {
         id: nextId++,
-        startX: 10 + Math.random() * 80, // keep starts within the visible sky
-        startY: 5 + Math.random() * 60,
+        startX: -5 + Math.random() * 50,  // start in the LEFT half of the sky
+        startY: 5 + Math.random() * 35,   // upper portion of the sky
         length,
         angle: angleDeg,
         duration: 0.7 + Math.random() * 0.5,
@@ -333,13 +334,10 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
   // Foreground LEFT hill — high apex at top-left, with a small ledge/shoulder
   // around 200-300 where the tree cluster sits, then ramps diagonally down to
   // the right. Closely matches the silhouette in the reference photo.
-  const frontHillPath = useMemo(() => {
-    const rand = mulberry32(211);
-    const noise = createNoise2D(rand);
-    const fh = 480;
-    // Hand-shaped key points (x, y in viewBox units), then sample with noise
-    // along the diagonal slope between them.
-    const keys: [number, number][] = [
+  // Hand-shaped key points (x, y in viewBox units), then sample with noise
+  // along the diagonal slope between them.
+  const frontHillKeys: [number, number][] = useMemo(
+    () => [
       [-160, 60],
       [40, 75],
       [120, 105],
@@ -350,7 +348,32 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       [520, 320],
       [640, 420],
       [780, 480],
-    ];
+    ],
+    [],
+  );
+  // Linear-interp lookup of the hill surface y for any x in viewBox space.
+  const frontHillSurfaceY = useMemo(() => {
+    return (x: number): number => {
+      const keys = frontHillKeys;
+      if (x <= keys[0][0]) return keys[0][1];
+      if (x >= keys[keys.length - 1][0]) return keys[keys.length - 1][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [x1, y1] = keys[i];
+        const [x2, y2] = keys[i + 1];
+        if (x >= x1 && x <= x2) {
+          const t = (x - x1) / (x2 - x1);
+          return y1 + (y2 - y1) * t;
+        }
+      }
+      return 480;
+    };
+  }, [frontHillKeys]);
+
+  const frontHillPath = useMemo(() => {
+    const rand = mulberry32(211);
+    const noise = createNoise2D(rand);
+    const fh = 480;
+    const keys = frontHillKeys;
     // Linear interpolate along keys with noise jitter
     const pts: [number, number][] = [];
     for (let i = 0; i < keys.length - 1; i++) {
@@ -369,7 +392,31 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     for (const [x, y] of pts) d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
     d += ` L 780 ${fh} Z`;
     return d;
-  }, []);
+  }, [frontHillKeys]);
+
+  // Tree positions in viewBox coords (matched to the hill key layout above).
+  // Each tree's y is computed from the actual hill surface so they always sit
+  // exactly on the silhouette regardless of viewport size.
+  const trees = useMemo(() => {
+    const main = [
+      { seed: 17, x: 130, h: 138 },  // tallest, left side of cluster
+      { seed: 41, x: 95,  h: 110 },
+      { seed: 29, x: 165, h: 122 },
+      { seed: 53, x: 200, h: 100 },  // on the ledge plateau
+      { seed: 79, x: 235, h: 82 },
+      { seed: 89, x: 260, h: 64 },
+    ];
+    const distant = [
+      { seed: 113, x: 360, h: 38 },
+      { seed: 131, x: 395, h: 32 },
+      { seed: 149, x: 430, h: 28 },
+    ];
+    return [...main, ...distant].map((t) => ({
+      ...t,
+      surfaceY: frontHillSurfaceY(t.x),
+      tree: generatePineTree(t.seed),
+    }));
+  }, [frontHillSurfaceY]);
 
   // Bottom-RIGHT massif — rises from the bottom-right corner up and to the
   // left, meeting the foreground left hill near the center-bottom.
@@ -528,10 +575,11 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
         </defs>
       </svg>
 
-      {/* Procedural mountain ridges — multi-octave noise + organic edge displacement */}
+      {/* Procedural mountain ridges — each layer's bottom is anchored BELOW the
+          viewport so the parallax shift never exposes the SVG's straight edge. */}
       <motion.div
-        className="absolute inset-x-0 bottom-0 z-[6] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, height: "44%" }}
+        className="absolute inset-x-0 z-[6] pointer-events-none"
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "52%" }}
       >
         <svg
           className="absolute"
@@ -544,8 +592,8 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       </motion.div>
 
       <motion.div
-        className="absolute inset-x-0 bottom-0 z-[7] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, height: "40%" }}
+        className="absolute inset-x-0 z-[7] pointer-events-none"
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "48%" }}
       >
         <svg
           className="absolute"
@@ -558,8 +606,8 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       </motion.div>
 
       <motion.div
-        className="absolute inset-x-0 bottom-0 z-[8] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, height: "37%" }}
+        className="absolute inset-x-0 z-[8] pointer-events-none"
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "45%" }}
       >
         <svg
           className="absolute"
@@ -572,8 +620,8 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       </motion.div>
 
       <motion.div
-        className="absolute inset-x-0 bottom-0 z-[9] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, height: "42%" }}
+        className="absolute inset-x-0 z-[9] pointer-events-none"
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "50%" }}
       >
         <svg
           className="absolute"
@@ -585,10 +633,10 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
         </svg>
       </motion.div>
 
-      {/* Bottom-RIGHT massif — rises diagonally from the corner */}
+      {/* Bottom-RIGHT massif — anchored below the viewport to hide its straight base */}
       <motion.div
-        className="absolute inset-x-0 bottom-0 z-[10] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, height: "58%" }}
+        className="absolute inset-x-0 z-[10] pointer-events-none"
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "66%" }}
       >
         <svg
           className="absolute"
@@ -600,10 +648,12 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
         </svg>
       </motion.div>
 
-      {/* Foreground LEFT massif — high apex on the left, ledge for the trees */}
+      {/* Foreground LEFT massif — high apex on the left with a tree ledge.
+          Trees are rendered INSIDE this SVG so they sit exactly on the
+          silhouette regardless of viewport size. */}
       <motion.div
-        className="absolute inset-x-0 bottom-0 z-[11] pointer-events-none"
-        style={{ x: frontHillX, y: frontHillY, height: "78%" }}
+        className="absolute inset-x-0 z-[11] pointer-events-none"
+        style={{ x: frontHillX, y: frontHillY, bottom: "-8%", height: "86%" }}
       >
         <svg
           className="absolute"
@@ -612,19 +662,27 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           preserveAspectRatio="none"
         >
           <path d={frontHillPath} fill="#0d1321" filter="url(#ridgeRoughStrong)" />
+          {trees.map((t) => {
+            // Tree's natural viewBox is 40 wide × 130 tall; scale by height.
+            const scale = t.h / 130;
+            const w = 40 * scale;
+            // Translate so the tree's BASE (y=118 in its own viewBox) sits on
+            // the hill surface, with a few units of buried trunk for grounding.
+            const baseOffset = 118 * scale;
+            return (
+              <g
+                key={t.seed}
+                transform={`translate(${t.x - w / 2}, ${t.surfaceY - baseOffset}) scale(${scale})`}
+                fill="#0d1321"
+              >
+                <path d={t.tree.trunk} />
+                {t.tree.tiers.map((d, i) => (
+                  <path key={i} d={d} />
+                ))}
+              </g>
+            );
+          })}
         </svg>
-
-        {/* Main tree cluster — sitting on the ledge plateau of the foreground hill */}
-        <PineTree seed={29} style={{ left: "1%",  bottom: "73%", height: "26%" }} />
-        <PineTree seed={41} style={{ left: "3.5%", bottom: "72%", height: "32%" }} />
-        <PineTree seed={17} style={{ left: "6.5%", bottom: "70%", height: "40%" }} />
-        <PineTree seed={53} style={{ left: "10%", bottom: "68%", height: "34%" }} />
-        <PineTree seed={79} style={{ left: "13%", bottom: "65%", height: "26%" }} />
-
-        {/* Tiny secondary cluster lower on the slope */}
-        <PineTree seed={113} style={{ left: "18%", bottom: "55%", height: "14%" }} />
-        <PineTree seed={131} style={{ left: "20.5%", bottom: "53%", height: "12%" }} />
-        <PineTree seed={149} style={{ left: "23%", bottom: "50%", height: "10%" }} />
       </motion.div>
     </>
   );
