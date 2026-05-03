@@ -157,8 +157,11 @@ function ShootingStars() {
         dx: Math.cos(angleRad) * distance,
         dy: Math.sin(angleRad) * distance,
       };
-      setShooters((prev) => [...prev.slice(-7), s]);
-      timer = window.setTimeout(spawn, 6000 + Math.random() * 7000);
+      setShooters([s]);
+      // Wait until this meteor has fully faded before spawning another so
+      // there is never more than one streak on screen at the same time.
+      const nextDelay = s.duration * 1000 + 6000 + Math.random() * 7000;
+      timer = window.setTimeout(spawn, nextDelay);
     };
 
     timer = window.setTimeout(spawn, 800 + Math.random() * 1500);
