@@ -278,31 +278,73 @@ function Birds() {
   );
 }
 
+type CloudPuff = { cx: number; cy: number; r: number };
 type Cloud = {
   id: number;
   y: number;
+  width: number;
+  height: number;
   scale: number;
   duration: number;
   delay: number;
   opacity: number;
-  variant: number;
+  blur: number;
+  puffs: CloudPuff[];
 };
 
-function CloudShape({ variant }: { variant: number }) {
-  // Two slightly different soft cloud silhouettes for variety.
-  const paths = [
-    "M20,40 Q20,22 38,22 Q44,10 62,12 Q78,4 92,16 Q112,12 116,30 Q132,32 132,46 Q132,58 116,58 L34,58 Q20,58 20,40 Z",
-    "M16,46 Q16,30 32,30 Q38,18 56,20 Q70,10 86,22 Q104,18 110,34 Q124,36 124,48 Q124,58 108,58 L28,58 Q16,58 16,46 Z",
-  ];
+function generateCloudPuffs(seed: number): {
+  puffs: CloudPuff[];
+  width: number;
+  height: number;
+} {
+  // Deterministic pseudo-random from seed so SSR/initial render matches.
+  let s = seed * 9301 + 49297;
+  const rand = () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+
+  const count = 4 + Math.floor(rand() * 5); // 4-8 puffs
+  const baseR = 14 + rand() * 10;            // 14-24 base radius
+  const width = 80 + rand() * 120;           // 80-200 viewbox width
+  const height = 36 + rand() * 28;           // 36-64 viewbox height
+  const baseline = height * 0.62;            // bottom of cloud body
+  const usableW = width - baseR * 2;
+
+  const puffs: CloudPuff[] = [];
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 0.5 : i / (count - 1);
+    // Distribute along x with slight jitter
+    const cx = baseR + t * usableW + (rand() - 0.5) * baseR * 0.6;
+    // Middle puffs are taller, edges sit lower — gives a fluffy silhouette
+    const arc = Math.sin(t * Math.PI);
+    const cy = baseline - arc * (height * 0.18) + (rand() - 0.5) * 4;
+    const r = baseR * (0.7 + arc * 0.55 + rand() * 0.25);
+    puffs.push({ cx, cy, r });
+  }
+  // Add a flat-ish base pad so the cloud reads as a single shape
+  puffs.push({
+    cx: width / 2,
+    cy: baseline + 2,
+    r: Math.min(width * 0.42, height * 0.55),
+  });
+  return { puffs, width, height };
+}
+
+function CloudShape({ cloud }: { cloud: Cloud }) {
   return (
     <svg
-      width="160"
-      height="64"
-      viewBox="0 0 140 64"
+      width={cloud.width}
+      height={cloud.height}
+      viewBox={`0 0 ${cloud.width} ${cloud.height}`}
       fill="none"
-      style={{ display: "block" }}
+      style={{ display: "block", overflow: "visible" }}
     >
-      <path d={paths[variant % paths.length]} fill="white" />
+      <g fill="white">
+        {cloud.puffs.map((p, i) => (
+          <circle key={i} cx={p.cx} cy={p.cy} r={p.r} />
+        ))}
+      </g>
     </svg>
   );
 }
@@ -310,15 +352,19 @@ function CloudShape({ variant }: { variant: number }) {
 function Clouds() {
   const clouds = useMemo<Cloud[]>(() => {
     const items: Cloud[] = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
+      const { puffs, width, height } = generateCloudPuffs(i + 1);
       items.push({
         id: i,
-        y: 6 + Math.random() * 32,
-        scale: 0.7 + Math.random() * 1.1,
-        duration: 180 + Math.random() * 140,
-        delay: -Math.random() * 250,
-        opacity: 0.55 + Math.random() * 0.3,
-        variant: i % 2,
+        y: 4 + Math.random() * 36,
+        width,
+        height,
+        scale: 0.55 + Math.random() * 1.4,   // 0.55x – 1.95x
+        duration: 160 + Math.random() * 180, // 160s – 340s
+        delay: -Math.random() * 300,
+        opacity: 0.5 + Math.random() * 0.4,
+        blur: 0.5 + Math.random() * 1.5,
+        puffs,
       });
     }
     return items;
@@ -336,10 +382,10 @@ function Clouds() {
             transform: `scale(${c.scale})`,
             transformOrigin: "left center",
             opacity: c.opacity,
-            filter: "blur(1px)",
+            filter: `blur(${c.blur}px)`,
           }}
           initial={{ x: "-20vw" }}
-          animate={{ x: "120vw" }}
+          animate={{ x: "125vw" }}
           transition={{
             duration: c.duration,
             delay: c.delay,
@@ -347,7 +393,7 @@ function Clouds() {
             ease: "linear",
           }}
         >
-          <CloudShape variant={c.variant} />
+          <CloudShape cloud={c} />
         </motion.div>
       ))}
     </div>
