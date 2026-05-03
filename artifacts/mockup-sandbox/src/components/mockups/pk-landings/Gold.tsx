@@ -96,6 +96,65 @@ export function Gold() {
         </div>
       )}
 
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute left-1/2 top-1/2 z-[5] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        style={{ width: "min(38vw, 38vh)", height: "min(38vw, 38vh)" }}
+      >
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `radial-gradient(circle at 38% 38%, ${PALETTE.goldBright} 0%, ${PALETTE.gold} 45%, #b8860b 80%, #6b4a00 100%)`,
+            boxShadow: `0 0 80px 20px ${PALETTE.gold}33, 0 0 200px 60px ${PALETTE.goldBright}1f`,
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-full mix-blend-overlay opacity-40"
+          style={{
+            background:
+              "radial-gradient(circle at 70% 70%, transparent 55%, rgba(0,0,0,0.55) 100%)",
+          }}
+        />
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: "12%",
+            height: "12%",
+            left: "22%",
+            top: "30%",
+            background: "rgba(0,0,0,0.18)",
+          }}
+          animate={{ opacity: [0.6, 0.4, 0.6] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: "7%",
+            height: "7%",
+            left: "55%",
+            top: "55%",
+            background: "rgba(0,0,0,0.22)",
+          }}
+          animate={{ opacity: [0.5, 0.3, 0.5] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: "5%",
+            height: "5%",
+            left: "70%",
+            top: "30%",
+            background: "rgba(0,0,0,0.18)",
+          }}
+          animate={{ opacity: [0.4, 0.25, 0.4] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.div>
+
       <div className="absolute inset-0 z-10 flex flex-col justify-between p-8 md:p-16 pointer-events-none">
         <div className="flex justify-between items-start w-full">
           <div />
@@ -120,8 +179,14 @@ export function Gold() {
               className="text-sm md:text-base tracking-[0.2em] font-light leading-relaxed lowercase"
               style={{ color: PALETTE.goldBright }}
             >
-              paul kim &mdash; journal &amp; work
+              peter kay &mdash; journal &amp; work
             </h1>
+            <p
+              className="mt-2 text-xs tracking-[0.3em] font-light"
+              style={{ color: PALETTE.gold, fontFamily: "'Source Han Serif K', 'Noto Serif KR', serif" }}
+            >
+              계성우
+            </p>
           </motion.div>
 
           <motion.a
