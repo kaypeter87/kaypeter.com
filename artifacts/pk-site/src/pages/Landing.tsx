@@ -279,24 +279,24 @@ function Birds() {
 }
 
 type CloudPuff = { cx: number; cy: number; r: number };
+type CloudShapeData = {
+  puffs: CloudPuff[];
+  base: { cx: number; cy: number; rx: number; ry: number };
+  width: number;
+  height: number;
+};
 type Cloud = {
   id: number;
   y: number;
-  width: number;
-  height: number;
   scale: number;
   duration: number;
   delay: number;
   opacity: number;
   blur: number;
-  puffs: CloudPuff[];
+  shape: CloudShapeData;
 };
 
-function generateCloudPuffs(seed: number): {
-  puffs: CloudPuff[];
-  width: number;
-  height: number;
-} {
+function generateCloudPuffs(seed: number): CloudShapeData {
   // Deterministic pseudo-random from seed so SSR/initial render matches.
   let s = seed * 9301 + 49297;
   const rand = () => {
@@ -304,42 +304,46 @@ function generateCloudPuffs(seed: number): {
     return s / 233280;
   };
 
-  const count = 4 + Math.floor(rand() * 5); // 4-8 puffs
-  const baseR = 14 + rand() * 10;            // 14-24 base radius
-  const width = 80 + rand() * 120;           // 80-200 viewbox width
-  const height = 36 + rand() * 28;           // 36-64 viewbox height
-  const baseline = height * 0.62;            // bottom of cloud body
-  const usableW = width - baseR * 2;
+  const count = 3 + Math.floor(rand() * 3); // 3-5 puffs
+  const baseR = 18 + rand() * 5;             // 18-23 base puff radius
+  // Pack puffs tightly: each puff overlaps its neighbor by ~40%.
+  const step = baseR * 1.2;
+  const width = baseR * 2 + step * (count - 1) + baseR * 0.4;
+  const height = baseR * 2.4;
+  const baseline = height * 0.7;
 
   const puffs: CloudPuff[] = [];
   for (let i = 0; i < count; i++) {
     const t = count === 1 ? 0.5 : i / (count - 1);
-    // Distribute along x with slight jitter
-    const cx = baseR + t * usableW + (rand() - 0.5) * baseR * 0.6;
-    // Middle puffs are taller, edges sit lower — gives a fluffy silhouette
+    const cx = baseR + t * step * (count - 1);
+    // Gentle dome — middle puffs taller than edges.
     const arc = Math.sin(t * Math.PI);
-    const cy = baseline - arc * (height * 0.18) + (rand() - 0.5) * 4;
-    const r = baseR * (0.7 + arc * 0.55 + rand() * 0.25);
+    const cy = baseline - arc * (baseR * 0.55);
+    const r = baseR * (0.88 + arc * 0.22);
     puffs.push({ cx, cy, r });
   }
-  // Add a flat-ish base pad so the cloud reads as a single shape
-  puffs.push({
+
+  // Wide flat base ellipse merges every puff into one silhouette.
+  const base = {
     cx: width / 2,
-    cy: baseline + 2,
-    r: Math.min(width * 0.42, height * 0.55),
-  });
-  return { puffs, width, height };
+    cy: baseline + 1,
+    rx: width * 0.46,
+    ry: baseR * 0.85,
+  };
+
+  return { puffs, base, width, height };
 }
 
 function CloudShape({ cloud }: { cloud: Cloud }) {
+  const { shape } = cloud;
   const filterId = `cloud-blur-${cloud.id}`;
   // Pad the SVG so the blur isn't clipped at the edges.
   const pad = Math.ceil(cloud.blur * 4 + 6);
   return (
     <svg
-      width={cloud.width + pad * 2}
-      height={cloud.height + pad * 2}
-      viewBox={`${-pad} ${-pad} ${cloud.width + pad * 2} ${cloud.height + pad * 2}`}
+      width={shape.width + pad * 2}
+      height={shape.height + pad * 2}
+      viewBox={`${-pad} ${-pad} ${shape.width + pad * 2} ${shape.height + pad * 2}`}
       fill="none"
       style={{ display: "block" }}
     >
@@ -349,7 +353,13 @@ function CloudShape({ cloud }: { cloud: Cloud }) {
         </filter>
       </defs>
       <g fill="white" filter={`url(#${filterId})`}>
-        {cloud.puffs.map((p, i) => (
+        <ellipse
+          cx={shape.base.cx}
+          cy={shape.base.cy}
+          rx={shape.base.rx}
+          ry={shape.base.ry}
+        />
+        {shape.puffs.map((p, i) => (
           <circle key={i} cx={p.cx} cy={p.cy} r={p.r} />
         ))}
       </g>
@@ -361,18 +371,16 @@ function Clouds() {
   const clouds = useMemo<Cloud[]>(() => {
     const items: Cloud[] = [];
     for (let i = 0; i < 6; i++) {
-      const { puffs, width, height } = generateCloudPuffs(i + 1);
+      const shape = generateCloudPuffs(i + 1);
       items.push({
         id: i,
-        y: 4 + Math.random() * 36,
-        width,
-        height,
-        scale: 0.55 + Math.random() * 1.4,   // 0.55x – 1.95x
-        duration: 160 + Math.random() * 180, // 160s – 340s
+        y: 6 + Math.random() * 30,
+        scale: 0.75 + Math.random() * 0.7,   // 0.75x – 1.45x
+        duration: 180 + Math.random() * 160, // 180s – 340s
         delay: -Math.random() * 300,
-        opacity: 0.5 + Math.random() * 0.4,
-        blur: 0.5 + Math.random() * 1.5,
-        puffs,
+        opacity: 0.75 + Math.random() * 0.2,
+        blur: 0.3 + Math.random() * 0.4,
+        shape,
       });
     }
     return items;
