@@ -321,12 +321,13 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
   const H = 240;
   const ridges = useMemo(
     () => ({
-      // Smooth, rolling distant ridges (low amplitude, low frequency)
-      farthest:  generateRidge({ seed: 11, width: W, height: H, baselineY: 165, amplitude: 30, slope: -8,  freq: 0.45, jitter: 0,    step: 6 }),
-      far:       generateRidge({ seed: 47, width: W, height: H, baselineY: 185, amplitude: 38, slope: -6,  freq: 0.55, jitter: 0,    step: 6 }),
+      // Smooth, rolling distant ridges (low amplitude, low frequency).
+      // Lower baselineY = higher peaks in the frame.
+      farthest:  generateRidge({ seed: 11, width: W, height: H, baselineY: 110, amplitude: 45, slope: -8,  freq: 0.45, jitter: 0,    step: 6 }),
+      far:       generateRidge({ seed: 47, width: W, height: H, baselineY: 135, amplitude: 55, slope: -6,  freq: 0.55, jitter: 0,    step: 6 }),
       // Closer ridges with more defined peaks
-      mid:       generateRidge({ seed: 73, width: W, height: H, baselineY: 210, amplitude: 50, slope: -4,  freq: 0.75, jitter: 0.02, step: 4 }),
-      near:      generateRidge({ seed: 109, width: W, height: H, baselineY: 230, amplitude: 45, slope: 0,   freq: 0.95, jitter: 0.04, step: 3 }),
+      mid:       generateRidge({ seed: 73, width: W, height: H, baselineY: 165, amplitude: 70, slope: -4,  freq: 0.75, jitter: 0.02, step: 4 }),
+      near:      generateRidge({ seed: 109, width: W, height: H, baselineY: 190, amplitude: 65, slope: 0,   freq: 0.95, jitter: 0.04, step: 3 }),
     }),
     [],
   );
@@ -338,15 +339,15 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
   // along the diagonal slope between them.
   const frontHillKeys: [number, number][] = useMemo(
     () => [
-      [-160, 60],
-      [40, 75],
-      [120, 105],
-      [200, 135],     // ledge starts
-      [260, 145],     // ledge plateau (where trees go)
-      [320, 175],
-      [410, 240],
-      [520, 320],
-      [640, 420],
+      [-160, 10],
+      [40, 28],
+      [120, 60],
+      [200, 92],
+      [260, 110],
+      [320, 145],
+      [410, 215],
+      [520, 300],
+      [640, 405],
       [780, 480],
     ],
     [],
@@ -384,12 +385,12 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     const fh = 480;
     const keys: [number, number][] = [
       [600, fh],
-      [780, 410],
-      [920, 350],
-      [1080, 290],
-      [1240, 250],
-      [1380, 220],
-      [1540, 200],
+      [780, 360],
+      [920, 280],
+      [1080, 210],
+      [1240, 160],
+      [1380, 125],
+      [1540, 100],
     ];
     const pts: [number, number][] = [];
     for (let i = 0; i < keys.length - 1; i++) {
@@ -537,7 +538,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewport so the parallax shift never exposes the SVG's straight edge. */}
       <motion.div
         className="absolute inset-x-0 z-[6] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "72%" }}
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "92%" }}
       >
         <svg
           className="absolute"
@@ -551,7 +552,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 z-[7] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "66%" }}
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "86%" }}
       >
         <svg
           className="absolute"
@@ -565,7 +566,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 z-[8] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "62%" }}
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
       >
         <svg
           className="absolute"
@@ -579,7 +580,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 z-[9] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "68%" }}
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "88%" }}
       >
         <svg
           className="absolute"
