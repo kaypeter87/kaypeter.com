@@ -730,10 +730,16 @@ export default function Landing() {
             transition={{ duration: 1.5, delay: 0.5 }}
             className="pointer-events-auto"
           >
-            <h1 className="text-sm md:text-base tracking-[0.2em] font-light leading-relaxed text-foreground lowercase">
+            <h1
+              className="text-sm md:text-base tracking-[0.2em] font-light leading-relaxed lowercase"
+              style={{ color: isDark ? "#f0ebd8" : "#dad7cd" }}
+            >
               peter kay &mdash; journal &amp; work
             </h1>
-            <p className="mt-2 text-xs tracking-[0.3em] uppercase font-light text-muted-foreground">
+            <p
+              className="mt-2 text-xs tracking-[0.3em] uppercase font-light"
+              style={{ color: isDark ? "#748cab" : "#a3b18a" }}
+            >
               계성우
             </p>
           </motion.div>
@@ -746,10 +752,14 @@ export default function Landing() {
           >
             <Link
               href="/about"
-              className="group flex items-center gap-4 text-xs tracking-[0.3em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-500"
+              className="group flex items-center gap-4 text-xs tracking-[0.3em] uppercase transition-colors duration-500"
+              style={{ color: isDark ? "#748cab" : "#a3b18a" }}
             >
               <span>Enter</span>
-              <span className="w-8 h-px bg-muted-foreground group-hover:bg-foreground transition-all duration-500 group-hover:w-16 origin-left" />
+              <span
+                className="w-8 h-px transition-all duration-500 group-hover:w-16 origin-left"
+                style={{ background: isDark ? "#748cab" : "#a3b18a" }}
+              />
             </Link>
           </motion.div>
         </div>
