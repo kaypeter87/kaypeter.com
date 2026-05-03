@@ -55,41 +55,54 @@ function generateRidge(opts: {
   return d;
 }
 
-// Build a natural pine tree silhouette with irregular needle clusters.
+// Build a fir/pine silhouette as a single closed path. The outline is a chain
+// of drooping triangular branch tiers stacked from a sharp apex down to a wide
+// base — the classic conifer shape, but with per-tier noise so every tree is
+// unique.
 function generatePineTree(seed: number): string {
   const rand = mulberry32(seed);
-  // Vertical needle clusters arranged from top to bottom, each tier slightly
-  // wider and with small random offsets so no two trees look identical.
-  const tiers = 14 + Math.floor(rand() * 4);
-  const polys: string[] = [];
-  let y = 8;
-  for (let i = 0; i < tiers; i++) {
-    const t = i / (tiers - 1);
-    const baseWidth = 6 + t * 32;          // tier broadens toward base
-    const heightStep = 5 + t * 4;
-    const sway = (rand() - 0.5) * 3 * t;
-    const cx = 20 + sway;
-    const left = cx - baseWidth / 2;
-    const right = cx + baseWidth / 2;
-    const top = y;
-    const bottom = y + heightStep + 3;
-    // jagged needle row: sample several small triangles along the tier
-    const needles = Math.max(3, Math.floor(baseWidth / 3));
-    let row = `M ${left.toFixed(1)} ${bottom.toFixed(1)}`;
-    for (let n = 0; n <= needles; n++) {
-      const nt = n / needles;
-      const nx = left + nt * baseWidth;
-      // alternate up to a peak height with small noise
-      const peak = top + (rand() * 1.5);
-      const dipY = bottom - rand() * 1.2;
-      row += ` L ${(nx - 0.6).toFixed(1)} ${dipY.toFixed(1)}`;
-      row += ` L ${nx.toFixed(1)} ${peak.toFixed(1)}`;
-    }
-    row += ` L ${right.toFixed(1)} ${bottom.toFixed(1)} Z`;
-    polys.push(row);
-    y += heightStep;
+  const cx = 20;
+  const apexY = 4;
+  const baseY = 116;
+  const tiers = 9 + Math.floor(rand() * 3); // 9-11 branch tiers
+  const totalH = baseY - apexY;
+  const maxHalf = 15 + rand() * 3;          // base half-width
+
+  type Pt = [number, number];
+  const rightEdge: Pt[] = [];
+  const leftEdge: Pt[] = [];
+
+  for (let i = 1; i <= tiers; i++) {
+    const t = i / tiers;
+    // Quadratic taper: narrow near the apex, fanning out near the base.
+    const taper = t * t * 0.85 + t * 0.15;
+    const half = maxHalf * taper * (0.88 + rand() * 0.22);
+    const yMid = apexY + t * totalH;
+    // Each branch droops: tip sits slightly below the shoulder.
+    const shoulderY = yMid - (totalH / tiers) * 0.45;
+    const tipDrop = (totalH / tiers) * (0.35 + rand() * 0.35);
+    const tipY = yMid + tipDrop;
+    // Tiny independent jitter so left/right are not perfect mirrors.
+    const rJitter = (rand() - 0.5) * 1.2;
+    const lJitter = (rand() - 0.5) * 1.2;
+
+    rightEdge.push([cx + half * 0.18, shoulderY]);
+    rightEdge.push([cx + half + rJitter, tipY]);
+    leftEdge.push([cx - half * 0.18, shoulderY]);
+    leftEdge.push([cx - half + lJitter, tipY]);
   }
-  return polys.join(" ");
+
+  let d = `M ${cx} ${apexY}`;
+  for (const [x, y] of rightEdge) d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+  // Trunk base — small flare so the tree sits on the ground naturally.
+  d += ` L ${(cx + 2).toFixed(1)} ${baseY}`;
+  d += ` L ${(cx - 2).toFixed(1)} ${baseY}`;
+  for (let i = leftEdge.length - 1; i >= 0; i--) {
+    const [x, y] = leftEdge[i];
+    d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  d += " Z";
+  return d;
 }
 
 type Star = {
@@ -294,8 +307,8 @@ function PineTree({ style, seed }: { style: React.CSSProperties; seed: number })
       viewBox="0 0 40 130"
       preserveAspectRatio="xMidYMax meet"
     >
-      {/* trunk */}
-      <rect x="18.5" y="118" width="3" height="10" fill="#0d1321" />
+      {/* small visible trunk peeking below the foliage */}
+      <rect x="19" y="115" width="2" height="14" fill="#0d1321" />
       <path d={path} fill="#0d1321" />
     </svg>
   );
