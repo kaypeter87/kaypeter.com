@@ -135,15 +135,15 @@ function ShootingStars() {
       // small random spread so successive meteors aren't perfectly parallel.
       const angleDeg = 18 + Math.random() * 18; // 18°-36° below horizontal
       const angleRad = (angleDeg * Math.PI) / 180;
-      const distance = 60 + Math.random() * 40;
-      const length = 80 + Math.random() * 90;
+      const distance = 28 + Math.random() * 22;
+      const length = 40 + Math.random() * 45;
       const s: Shooter = {
         id: nextId++,
         startX: -5 + Math.random() * 50,  // start in the LEFT half of the sky
         startY: 5 + Math.random() * 35,   // upper portion of the sky
         length,
         angle: angleDeg,
-        duration: 0.7 + Math.random() * 0.5,
+        duration: 0.35 + Math.random() * 0.25,
         dx: Math.cos(angleRad) * distance,
         dy: Math.sin(angleRad) * distance,
       };
