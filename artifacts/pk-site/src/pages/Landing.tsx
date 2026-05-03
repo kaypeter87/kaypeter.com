@@ -197,6 +197,22 @@ function Birds() {
   );
 }
 
+function PineTree({ style }: { style: React.CSSProperties }) {
+  return (
+    <svg
+      className="absolute"
+      style={{ ...style, aspectRatio: "1 / 3" }}
+      viewBox="0 0 40 120"
+      preserveAspectRatio="xMidYMax meet"
+    >
+      {/* trunk */}
+      <rect x="18" y="106" width="4" height="14" fill="#0d1321" />
+      {/* layered pine tiers — narrowing toward top */}
+      <polygon points="20,4 30,22 24,22 32,38 26,38 34,54 28,54 36,70 30,70 38,86 32,86 40,108 0,108 8,86 2,86 10,70 4,70 12,54 6,54 14,38 8,38 16,22 10,22" fill="#0d1321" />
+    </svg>
+  );
+}
+
 function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
   const starsX = useTransform(mx, (v) => v * 18);
   const starsY = useTransform(my, (v) => v * 18);
@@ -272,10 +288,10 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(18vw, 22vh)",
-          height: "min(18vw, 22vh)",
-          left: "14%",
-          top: "55%",
+          width: "min(28vw, 36vh)",
+          height: "min(28vw, 36vh)",
+          left: "22%",
+          top: "22%",
           x: moonX,
           y: moonY,
           translateX: "-50%",
@@ -320,37 +336,26 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <ShootingStars />
 
-      {/* Low wispy horizon clouds — soft blurred streaks rather than hard ellipses */}
+      {/* Distant mountain ridge — farthest, lightest, jagged */}
       <motion.div
-        className="absolute inset-0 z-[6] pointer-events-none overflow-hidden"
-        style={{ x: lowCloudX, y: lowCloudY }}
+        className="absolute inset-x-0 bottom-0 z-[6] pointer-events-none"
+        style={{ x: farHillX, y: farHillY, height: "32%" }}
       >
         <svg
           className="absolute"
-          style={{ left: "-15%", top: "52%", width: "130%", height: "16vh" }}
-          viewBox="0 0 1440 160"
+          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
+          viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <defs>
-            <filter id="cloudBlur" x="-10%" y="-50%" width="120%" height="200%">
-              <feGaussianBlur stdDeviation="6" />
-            </filter>
-            <linearGradient id="cloudFade" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#3e5c76" stopOpacity="0" />
-              <stop offset="40%" stopColor="#3e5c76" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#1d2d44" stopOpacity="0.25" />
-            </linearGradient>
-          </defs>
-          <g filter="url(#cloudBlur)" fill="url(#cloudFade)">
-            <path d="M -50 90 C 80 70, 180 80, 280 78 C 380 76, 460 92, 560 88 C 640 85, 700 78, 780 82 L 780 110 L -50 110 Z" />
-            <path d="M 600 78 C 720 60, 840 70, 960 68 C 1080 66, 1180 80, 1280 76 C 1360 73, 1440 82, 1500 80 L 1500 105 L 600 105 Z" opacity="0.85" />
-            <path d="M 100 60 C 220 48, 340 55, 460 52 C 560 50, 640 60, 740 58 L 740 80 L 100 80 Z" opacity="0.55" />
-            <path d="M 850 55 C 970 42, 1100 50, 1220 48 C 1320 46, 1400 56, 1500 54 L 1500 78 L 850 78 Z" opacity="0.5" />
-          </g>
+          <path
+            d="M -100 200 L 60 175 L 140 160 L 220 180 L 320 145 L 410 170 L 510 138 L 600 165 L 710 130 L 820 158 L 930 125 L 1040 152 L 1150 132 L 1260 158 L 1370 140 L 1540 165 L 1540 240 L -100 240 Z"
+            fill="#748cab"
+            opacity="0.28"
+          />
         </svg>
       </motion.div>
 
-      {/* Faint distant mountain ridge — jagged, lighter, far away on the right */}
+      {/* Mid-far ridge — slightly closer */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[7] pointer-events-none"
         style={{ x: farHillX, y: farHillY, height: "30%" }}
@@ -362,117 +367,82 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           preserveAspectRatio="none"
         >
           <path
-            d="M -100 220 L 100 195 L 180 175 L 260 200 L 360 165 L 440 185 L 520 150 L 620 180 L 720 130 L 820 165 L 920 110 L 1020 145 L 1120 95 L 1220 130 L 1320 80 L 1440 115 L 1540 70 L 1540 240 L -100 240 Z"
+            d="M -100 215 L 80 175 L 180 195 L 280 158 L 380 188 L 480 150 L 580 182 L 680 145 L 790 178 L 900 152 L 1010 188 L 1120 165 L 1230 195 L 1340 178 L 1540 200 L 1540 240 L -100 240 Z"
             fill="#3e5c76"
-            opacity="0.35"
+            opacity="0.55"
           />
         </svg>
       </motion.div>
 
-      {/* Far hills — sloping diagonally upward to the right */}
+      {/* Mid ridge — clearer peaks */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[8] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, height: "26%" }}
+        style={{ x: midHillX, y: midHillY, height: "28%" }}
       >
         <svg
           className="absolute"
           style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 200"
+          viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
           <path
-            d="M -100 180 C 160 160, 320 165, 480 145 C 640 125, 800 135, 960 110 C 1120 85, 1280 95, 1540 65 L 1540 200 L -100 200 Z"
-            fill="#3e5c76"
-            opacity="0.6"
+            d="M -100 220 L 60 195 L 140 175 L 220 200 L 310 168 L 400 198 L 490 160 L 580 195 L 680 175 L 780 205 L 880 188 L 980 215 L 1090 200 L 1200 220 L 1320 210 L 1440 222 L 1540 215 L 1540 240 L -100 240 Z"
+            fill="#1d2d44"
+            opacity="0.88"
           />
         </svg>
       </motion.div>
 
-      {/* Mid hills — also sloping upward to the right, darker */}
+      {/* Near ridge — even darker, biased left */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[9] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, height: "22%" }}
+        style={{ x: midHillX, y: midHillY, height: "32%" }}
       >
         <svg
           className="absolute"
           style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 200"
+          viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
           <path
-            d="M -100 175 C 200 160, 380 168, 560 140 C 740 115, 920 125, 1100 100 C 1260 80, 1380 90, 1540 60 L 1540 200 L -100 200 Z"
-            fill="#1d2d44"
-            opacity="0.9"
+            d="M -100 200 L 80 165 L 180 190 L 280 175 L 380 210 L 490 200 L 600 222 L 720 215 L 840 228 L 960 222 L 1080 230 L 1200 226 L 1320 232 L 1540 230 L 1540 240 L -100 240 Z"
+            fill="#0d1321"
+            opacity="0.92"
           />
         </svg>
       </motion.div>
 
-      {/* Front hill — base for the tree, sloping up to the right */}
+      {/* Foreground LEFT hill — rises high on the left, tapers down to the right */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[10] pointer-events-none"
-        style={{ x: frontHillX, y: frontHillY, height: "20%" }}
+        style={{ x: frontHillX, y: frontHillY, height: "62%" }}
       >
         <svg
           className="absolute"
           style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 220"
+          viewBox="0 0 1440 480"
           preserveAspectRatio="none"
         >
-          {/* Sloped front hill with a gentle peak under the tree's perch */}
+          {/* Big diagonal hill ramping from upper-left down to mid */}
           <path
-            d="M -100 200 C 220 175, 420 165, 620 130 C 700 118, 760 112, 820 128 C 1000 158, 1200 140, 1540 95 L 1540 220 L -100 220 Z"
+            d="M -100 80 C 60 110, 180 180, 300 250 C 380 300, 440 350, 520 430 L 520 480 L -100 480 Z"
             fill="#0d1321"
           />
         </svg>
-        {/* Tree on the central hill peak — irregular, organic silhouette */}
-        <svg
+
+        {/* Pine trees clustered on the foreground left hill */}
+        <div
           className="absolute"
-          style={{ left: "50%", bottom: "32%", transform: "translateX(-50%)" }}
-          width="160"
-          height="220"
-          viewBox="0 0 160 220"
+          style={{ left: "0%", bottom: "35%", width: "30%", height: "55%" }}
         >
-          {/* trunk — slight taper, off-center for natural feel */}
-          <path
-            d="M 76 200 L 80 140 L 84 140 L 88 200 Z"
-            fill="#0d1321"
-          />
-          {/* a couple of bare branches peeking out */}
-          <path
-            d="M 80 145 Q 65 130 50 125"
-            stroke="#0d1321"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 82 138 Q 100 125 115 122"
-            stroke="#0d1321"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-          />
-          {/* canopy: many small overlapping circles for an organic, leafy silhouette */}
-          <g fill="#0d1321">
-            <circle cx="80" cy="120" r="46" />
-            <circle cx="48" cy="108" r="22" />
-            <circle cx="112" cy="110" r="24" />
-            <circle cx="62" cy="86" r="22" />
-            <circle cx="98" cy="84" r="24" />
-            <circle cx="80" cy="68" r="26" />
-            <circle cx="40" cy="118" r="14" />
-            <circle cx="120" cy="120" r="14" />
-            <circle cx="56" cy="74" r="14" />
-            <circle cx="106" cy="72" r="14" />
-            <circle cx="70" cy="56" r="14" />
-            <circle cx="92" cy="58" r="14" />
-            <circle cx="80" cy="46" r="12" />
-            <circle cx="36" cy="100" r="10" />
-            <circle cx="124" cy="98" r="10" />
-            <circle cx="88" cy="138" r="14" />
-            <circle cx="72" cy="138" r="14" />
-          </g>
-        </svg>
+          <PineTree style={{ left: "2%",  bottom: "28%", height: "78%"  }} />
+          <PineTree style={{ left: "10%", bottom: "20%", height: "92%"  }} />
+          <PineTree style={{ left: "18%", bottom: "10%", height: "100%" }} />
+          <PineTree style={{ left: "28%", bottom: "0%",  height: "80%"  }} />
+          <PineTree style={{ left: "40%", bottom: "-8%", height: "70%"  }} />
+          <PineTree style={{ left: "52%", bottom: "-18%", height: "58%" }} />
+          <PineTree style={{ left: "62%", bottom: "-28%", height: "48%" }} />
+        </div>
       </motion.div>
     </>
   );
