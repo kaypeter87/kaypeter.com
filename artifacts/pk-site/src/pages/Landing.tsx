@@ -69,7 +69,7 @@ function ShootingStars() {
         startY: -10 + Math.random() * 15,  // start above or just inside top
         length,
         angle: angleDeg,
-        duration: 1.4 + Math.random() * 1.0, // 1.4-2.4s
+        duration: 0.7 + Math.random() * 0.5, // 0.7-1.2s
         dx: Math.cos(angleRad) * distance,
         dy: Math.sin(angleRad) * distance,
       };
