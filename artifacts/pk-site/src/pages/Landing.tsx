@@ -537,7 +537,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewport so the parallax shift never exposes the SVG's straight edge. */}
       <motion.div
         className="absolute inset-x-0 z-[6] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "52%" }}
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "72%" }}
       >
         <svg
           className="absolute"
@@ -551,7 +551,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 z-[7] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "48%" }}
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "66%" }}
       >
         <svg
           className="absolute"
@@ -565,7 +565,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 z-[8] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "45%" }}
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "62%" }}
       >
         <svg
           className="absolute"
@@ -579,7 +579,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 z-[9] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "50%" }}
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "68%" }}
       >
         <svg
           className="absolute"
@@ -594,7 +594,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       {/* Bottom-RIGHT massif — anchored below the viewport to hide its straight base */}
       <motion.div
         className="absolute inset-x-0 z-[10] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "66%" }}
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
       >
         <svg
           className="absolute"
@@ -611,7 +611,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           silhouette regardless of viewport size. */}
       <motion.div
         className="absolute inset-x-0 z-[11] pointer-events-none"
-        style={{ x: frontHillX, y: frontHillY, bottom: "-8%", height: "86%" }}
+        style={{ x: frontHillX, y: frontHillY, bottom: "-8%", height: "100%" }}
       >
         <svg
           className="absolute"
