@@ -53,23 +53,19 @@ function ShootingStars() {
     let nextId = 0;
     let timer: number;
 
-    // Pick a single "shower direction" on mount, like a real meteor shower
-    // radiant. All meteors fall in roughly this direction with small variance.
-    // 65-80° = mostly downward with a gentle diagonal lean.
-    const baseAngle = 65 + Math.random() * 15;
-
     const spawn = () => {
-      const angleDeg = baseAngle + (Math.random() - 0.5) * 8; // small variance
+      // Any direction across the full 360° — each meteor picks its own angle.
+      const angleDeg = Math.random() * 360;
       const angleRad = (angleDeg * Math.PI) / 180;
-      const distance = 90 + Math.random() * 30; // travel ~full sky
-      const length = 80 + Math.random() * 90;   // streak length px
+      const distance = 60 + Math.random() * 40;
+      const length = 80 + Math.random() * 90;
       const s: Shooter = {
         id: nextId++,
-        startX: -10 + Math.random() * 100, // span the whole top
-        startY: -10 + Math.random() * 15,  // start above or just inside top
+        startX: 10 + Math.random() * 80, // keep starts within the visible sky
+        startY: 5 + Math.random() * 60,
         length,
         angle: angleDeg,
-        duration: 0.7 + Math.random() * 0.5, // 0.7-1.2s
+        duration: 0.7 + Math.random() * 0.5,
         dx: Math.cos(angleRad) * distance,
         dy: Math.sin(angleRad) * distance,
       };
