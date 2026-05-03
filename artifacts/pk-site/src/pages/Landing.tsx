@@ -560,8 +560,8 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(30vw, 40vh)",
-          height: "min(30vw, 40vh)",
+          width: "min(10vw, 13vh)",
+          height: "min(10vw, 13vh)",
           left: "26%",
           top: "20%",
           x: moonX,
@@ -635,8 +635,8 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(30vw, 40vh)",
-          height: "min(30vw, 40vh)",
+          width: "min(10vw, 13vh)",
+          height: "min(10vw, 13vh)",
           left: "26%",
           top: "20%",
           x: sunX,
