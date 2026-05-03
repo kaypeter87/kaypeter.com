@@ -637,7 +637,7 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
           className="absolute inset-[-35%] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(255,183,3,0.50) 0%, rgba(251,133,0,0.22) 40%, transparent 72%)",
+              "radial-gradient(circle, rgba(233,196,106,0.50) 0%, rgba(233,196,106,0.20) 40%, transparent 72%)",
           }}
           animate={{ opacity: [0.85, 1, 0.85] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -647,9 +647,9 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 40% 40%, #fff3c4 0%, #ffd45a 40%, #ffb703 75%, #fb8500 100%)",
+              "radial-gradient(circle at 40% 40%, #fbeec2 0%, #f1d68a 40%, #e9c46a 75%, #c89a3a 100%)",
             boxShadow:
-              "0 0 80px 20px rgba(255,183,3,0.35), 0 0 200px 60px rgba(251,133,0,0.18)",
+              "0 0 80px 20px rgba(233,196,106,0.35), 0 0 200px 60px rgba(233,196,106,0.18)",
           }}
         />
       </motion.div>
