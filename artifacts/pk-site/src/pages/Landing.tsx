@@ -200,8 +200,16 @@ function Birds() {
 function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
   const starsX = useTransform(mx, (v) => v * 18);
   const starsY = useTransform(my, (v) => v * 18);
-  const moonX = useTransform(mx, (v) => v * 38);
-  const moonY = useTransform(my, (v) => v * 38);
+  const moonX = useTransform(mx, (v) => v * 30);
+  const moonY = useTransform(my, (v) => v * 30);
+  const lowCloudX = useTransform(mx, (v) => v * 22);
+  const lowCloudY = useTransform(my, (v) => v * 22);
+  const farHillX = useTransform(mx, (v) => v * 14);
+  const farHillY = useTransform(my, (v) => v * 8);
+  const midHillX = useTransform(mx, (v) => v * 26);
+  const midHillY = useTransform(my, (v) => v * 14);
+  const frontHillX = useTransform(mx, (v) => v * 42);
+  const frontHillY = useTransform(my, (v) => v * 22);
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
     for (let i = 0; i < 100; i++) {
@@ -262,10 +270,12 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute left-1/2 top-1/2 z-[5] pointer-events-none"
+        className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(38vw, 38vh)",
-          height: "min(38vw, 38vh)",
+          width: "min(18vw, 22vh)",
+          height: "min(18vw, 22vh)",
+          left: "14%",
+          top: "55%",
           x: moonX,
           y: moonY,
           translateX: "-50%",
@@ -309,6 +319,96 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       </motion.div>
 
       <ShootingStars />
+
+      {/* Low wispy horizon clouds */}
+      <motion.div
+        className="absolute inset-0 z-[6] pointer-events-none overflow-hidden"
+        style={{ x: lowCloudX, y: lowCloudY }}
+      >
+        <svg
+          className="absolute left-0 right-0"
+          style={{ top: "55%", width: "100%", height: "12vh" }}
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+        >
+          <ellipse cx="200" cy="60" rx="180" ry="14" fill="#1d2d44" opacity="0.55" />
+          <ellipse cx="520" cy="70" rx="220" ry="12" fill="#1d2d44" opacity="0.45" />
+          <ellipse cx="900" cy="55" rx="260" ry="16" fill="#1d2d44" opacity="0.5" />
+          <ellipse cx="1280" cy="68" rx="200" ry="13" fill="#1d2d44" opacity="0.45" />
+        </svg>
+      </motion.div>
+
+      {/* Far hills — lightest, most distant */}
+      <motion.div
+        className="absolute inset-x-0 bottom-0 z-[7] pointer-events-none"
+        style={{ x: farHillX, y: farHillY, height: "32%" }}
+      >
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 1440 200"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,140 C160,80 320,110 480,95 C640,80 800,130 960,110 C1120,90 1280,120 1440,100 L1440,200 L0,200 Z"
+            fill="#3e5c76"
+            opacity="0.55"
+          />
+        </svg>
+      </motion.div>
+
+      {/* Mid hills */}
+      <motion.div
+        className="absolute inset-x-0 bottom-0 z-[8] pointer-events-none"
+        style={{ x: midHillX, y: midHillY, height: "26%" }}
+      >
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 1440 200"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,160 C200,100 380,140 560,120 C740,100 920,160 1100,135 C1260,115 1380,150 1440,140 L1440,200 L0,200 Z"
+            fill="#1d2d44"
+            opacity="0.85"
+          />
+        </svg>
+      </motion.div>
+
+      {/* Front hill + tree */}
+      <motion.div
+        className="absolute inset-x-0 bottom-0 z-[9] pointer-events-none"
+        style={{ x: frontHillX, y: frontHillY, height: "22%" }}
+      >
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 1440 220"
+          preserveAspectRatio="none"
+        >
+          {/* Front hill mound — gently rising to the tree's perch in the middle */}
+          <path
+            d="M0,170 C220,150 420,140 620,110 C700,98 760,92 820,108 C980,135 1180,150 1440,150 L1440,220 L0,220 Z"
+            fill="#0d1321"
+          />
+        </svg>
+        {/* Tree on the central hill peak */}
+        <svg
+          className="absolute"
+          style={{ left: "50%", bottom: "30%", transform: "translateX(-50%)" }}
+          width="140"
+          height="200"
+          viewBox="0 0 140 200"
+        >
+          {/* trunk */}
+          <rect x="66" y="130" width="8" height="58" fill="#0d1321" />
+          {/* canopy: layered rounded blobs for an organic silhouette */}
+          <ellipse cx="70" cy="110" rx="50" ry="42" fill="#0d1321" />
+          <ellipse cx="42" cy="96" rx="26" ry="26" fill="#0d1321" />
+          <ellipse cx="98" cy="96" rx="26" ry="26" fill="#0d1321" />
+          <ellipse cx="70" cy="72" rx="32" ry="28" fill="#0d1321" />
+          <ellipse cx="50" cy="78" rx="20" ry="20" fill="#0d1321" />
+          <ellipse cx="92" cy="78" rx="20" ry="20" fill="#0d1321" />
+        </svg>
+      </motion.div>
     </>
   );
 }
