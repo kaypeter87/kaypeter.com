@@ -54,7 +54,7 @@ function ShootingStars() {
     let timer: number;
 
     const spawn = () => {
-      // Pick from two downward diagonal quadrants — meteors always fall.
+      // Two downward diagonal quadrants — meteors always fall.
       const quadrants: Array<[number, number]> = [
         [30, 60],   // down-right
         [120, 150], // down-left
@@ -62,14 +62,15 @@ function ShootingStars() {
       const [minA, maxA] = quadrants[Math.floor(Math.random() * quadrants.length)];
       const angleDeg = minA + Math.random() * (maxA - minA);
       const angleRad = (angleDeg * Math.PI) / 180;
-      const distance = 30 + Math.random() * 25; // 30-55vw — in-view arc
+      const distance = 28 + Math.random() * 22; // travel distance in vw
+      const length = 130 + Math.random() * 110; // streak length in px
       const s: Shooter = {
         id: nextId++,
-        startX: 20 + Math.random() * 60, // 20-80% horizontally
-        startY: 5 + Math.random() * 35,  // upper half so it can fall through view
-        length: 120 + Math.random() * 100,
+        startX: 20 + Math.random() * 60,
+        startY: 5 + Math.random() * 30,
+        length,
         angle: angleDeg,
-        duration: 1.2 + Math.random() * 0.8, // 1.2-2.0s, quick like the real thing
+        duration: 1.0 + Math.random() * 0.6, // 1.0-1.6s
         dx: Math.cos(angleRad) * distance,
         dy: Math.sin(angleRad) * distance,
       };
@@ -83,31 +84,47 @@ function ShootingStars() {
 
   return (
     <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none">
-      {shooters.map((s) => (
-        <motion.div
-          key={s.id}
-          className="absolute"
-          style={{
-            left: `${s.startX}%`,
-            top: `${s.startY}%`,
-            width: `${s.length}px`,
-            height: "2px",
-            rotate: `${s.angle}deg`,
-            transformOrigin: "left center",
-            background:
-              "linear-gradient(to right, rgba(240,235,216,0) 0%, rgba(240,235,216,0.85) 60%, rgba(255,255,255,1) 100%)",
-            borderRadius: "2px",
-            filter: "drop-shadow(0 0 4px rgba(240,235,216,0.6))",
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{
-            duration: s.duration,
-            times: [0, 0.2, 0.55, 1],
-            ease: "easeInOut",
-          }}
-        />
-      ))}
+      {shooters.map((s) => {
+        // Position the streak so its BRIGHT HEAD sits at (startX, startY) and
+        // the faded tail extends backward against the direction of travel.
+        const tailRad = (s.angle * Math.PI) / 180;
+        const tailDx = -Math.cos(tailRad) * s.length;
+        const tailDy = -Math.sin(tailRad) * s.length;
+        return (
+          <motion.div
+            key={s.id}
+            className="absolute"
+            style={{
+              left: `${s.startX}%`,
+              top: `${s.startY}%`,
+              width: `${s.length}px`,
+              height: "2px",
+              transformOrigin: "100% 50%",
+              background:
+                "linear-gradient(to right, rgba(240,235,216,0) 0%, rgba(240,235,216,0.85) 70%, rgba(255,255,255,1) 100%)",
+              borderRadius: "2px",
+              filter: "drop-shadow(0 0 4px rgba(240,235,216,0.6))",
+              translate: `${tailDx}px ${tailDy}px`,
+              rotate: `${s.angle}deg`,
+            }}
+            initial={{ x: 0, y: 0, opacity: 0 }}
+            animate={{
+              x: `${s.dx}vw`,
+              y: `${s.dy}vh`,
+              opacity: [0, 1, 1, 0],
+            }}
+            transition={{
+              duration: s.duration,
+              ease: "linear",
+              opacity: {
+                duration: s.duration,
+                times: [0, 0.12, 0.65, 1],
+                ease: "easeOut",
+              },
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
