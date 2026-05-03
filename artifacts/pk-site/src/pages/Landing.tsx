@@ -320,93 +320,158 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <ShootingStars />
 
-      {/* Low wispy horizon clouds */}
+      {/* Low wispy horizon clouds — soft blurred streaks rather than hard ellipses */}
       <motion.div
         className="absolute inset-0 z-[6] pointer-events-none overflow-hidden"
         style={{ x: lowCloudX, y: lowCloudY }}
       >
         <svg
-          className="absolute left-0 right-0"
-          style={{ top: "55%", width: "100%", height: "12vh" }}
-          viewBox="0 0 1440 120"
+          className="absolute"
+          style={{ left: "-15%", top: "52%", width: "130%", height: "16vh" }}
+          viewBox="0 0 1440 160"
           preserveAspectRatio="none"
         >
-          <ellipse cx="200" cy="60" rx="180" ry="14" fill="#1d2d44" opacity="0.55" />
-          <ellipse cx="520" cy="70" rx="220" ry="12" fill="#1d2d44" opacity="0.45" />
-          <ellipse cx="900" cy="55" rx="260" ry="16" fill="#1d2d44" opacity="0.5" />
-          <ellipse cx="1280" cy="68" rx="200" ry="13" fill="#1d2d44" opacity="0.45" />
+          <defs>
+            <filter id="cloudBlur" x="-10%" y="-50%" width="120%" height="200%">
+              <feGaussianBlur stdDeviation="6" />
+            </filter>
+            <linearGradient id="cloudFade" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#3e5c76" stopOpacity="0" />
+              <stop offset="40%" stopColor="#3e5c76" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#1d2d44" stopOpacity="0.25" />
+            </linearGradient>
+          </defs>
+          <g filter="url(#cloudBlur)" fill="url(#cloudFade)">
+            <path d="M -50 90 C 80 70, 180 80, 280 78 C 380 76, 460 92, 560 88 C 640 85, 700 78, 780 82 L 780 110 L -50 110 Z" />
+            <path d="M 600 78 C 720 60, 840 70, 960 68 C 1080 66, 1180 80, 1280 76 C 1360 73, 1440 82, 1500 80 L 1500 105 L 600 105 Z" opacity="0.85" />
+            <path d="M 100 60 C 220 48, 340 55, 460 52 C 560 50, 640 60, 740 58 L 740 80 L 100 80 Z" opacity="0.55" />
+            <path d="M 850 55 C 970 42, 1100 50, 1220 48 C 1320 46, 1400 56, 1500 54 L 1500 78 L 850 78 Z" opacity="0.5" />
+          </g>
         </svg>
       </motion.div>
 
-      {/* Far hills — lightest, most distant */}
+      {/* Faint distant mountain ridge — jagged, lighter, far away on the right */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[7] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, height: "32%" }}
+        style={{ x: farHillX, y: farHillY, height: "30%" }}
       >
         <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 1440 200"
+          className="absolute"
+          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
+          viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
           <path
-            d="M0,140 C160,80 320,110 480,95 C640,80 800,130 960,110 C1120,90 1280,120 1440,100 L1440,200 L0,200 Z"
+            d="M -100 220 L 100 195 L 180 175 L 260 200 L 360 165 L 440 185 L 520 150 L 620 180 L 720 130 L 820 165 L 920 110 L 1020 145 L 1120 95 L 1220 130 L 1320 80 L 1440 115 L 1540 70 L 1540 240 L -100 240 Z"
             fill="#3e5c76"
-            opacity="0.55"
+            opacity="0.35"
           />
         </svg>
       </motion.div>
 
-      {/* Mid hills */}
+      {/* Far hills — sloping diagonally upward to the right */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[8] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, height: "26%" }}
+        style={{ x: farHillX, y: farHillY, height: "26%" }}
       >
         <svg
-          className="absolute inset-0 w-full h-full"
+          className="absolute"
+          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
           viewBox="0 0 1440 200"
           preserveAspectRatio="none"
         >
           <path
-            d="M0,160 C200,100 380,140 560,120 C740,100 920,160 1100,135 C1260,115 1380,150 1440,140 L1440,200 L0,200 Z"
-            fill="#1d2d44"
-            opacity="0.85"
+            d="M -100 180 C 160 160, 320 165, 480 145 C 640 125, 800 135, 960 110 C 1120 85, 1280 95, 1540 65 L 1540 200 L -100 200 Z"
+            fill="#3e5c76"
+            opacity="0.6"
           />
         </svg>
       </motion.div>
 
-      {/* Front hill + tree */}
+      {/* Mid hills — also sloping upward to the right, darker */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[9] pointer-events-none"
-        style={{ x: frontHillX, y: frontHillY, height: "22%" }}
+        style={{ x: midHillX, y: midHillY, height: "22%" }}
       >
         <svg
-          className="absolute inset-0 w-full h-full"
+          className="absolute"
+          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
+          viewBox="0 0 1440 200"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M -100 175 C 200 160, 380 168, 560 140 C 740 115, 920 125, 1100 100 C 1260 80, 1380 90, 1540 60 L 1540 200 L -100 200 Z"
+            fill="#1d2d44"
+            opacity="0.9"
+          />
+        </svg>
+      </motion.div>
+
+      {/* Front hill — base for the tree, sloping up to the right */}
+      <motion.div
+        className="absolute inset-x-0 bottom-0 z-[10] pointer-events-none"
+        style={{ x: frontHillX, y: frontHillY, height: "20%" }}
+      >
+        <svg
+          className="absolute"
+          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
           viewBox="0 0 1440 220"
           preserveAspectRatio="none"
         >
-          {/* Front hill mound — gently rising to the tree's perch in the middle */}
+          {/* Sloped front hill with a gentle peak under the tree's perch */}
           <path
-            d="M0,170 C220,150 420,140 620,110 C700,98 760,92 820,108 C980,135 1180,150 1440,150 L1440,220 L0,220 Z"
+            d="M -100 200 C 220 175, 420 165, 620 130 C 700 118, 760 112, 820 128 C 1000 158, 1200 140, 1540 95 L 1540 220 L -100 220 Z"
             fill="#0d1321"
           />
         </svg>
-        {/* Tree on the central hill peak */}
+        {/* Tree on the central hill peak — irregular, organic silhouette */}
         <svg
           className="absolute"
-          style={{ left: "50%", bottom: "30%", transform: "translateX(-50%)" }}
-          width="140"
-          height="200"
-          viewBox="0 0 140 200"
+          style={{ left: "50%", bottom: "32%", transform: "translateX(-50%)" }}
+          width="160"
+          height="220"
+          viewBox="0 0 160 220"
         >
-          {/* trunk */}
-          <rect x="66" y="130" width="8" height="58" fill="#0d1321" />
-          {/* canopy: layered rounded blobs for an organic silhouette */}
-          <ellipse cx="70" cy="110" rx="50" ry="42" fill="#0d1321" />
-          <ellipse cx="42" cy="96" rx="26" ry="26" fill="#0d1321" />
-          <ellipse cx="98" cy="96" rx="26" ry="26" fill="#0d1321" />
-          <ellipse cx="70" cy="72" rx="32" ry="28" fill="#0d1321" />
-          <ellipse cx="50" cy="78" rx="20" ry="20" fill="#0d1321" />
-          <ellipse cx="92" cy="78" rx="20" ry="20" fill="#0d1321" />
+          {/* trunk — slight taper, off-center for natural feel */}
+          <path
+            d="M 76 200 L 80 140 L 84 140 L 88 200 Z"
+            fill="#0d1321"
+          />
+          {/* a couple of bare branches peeking out */}
+          <path
+            d="M 80 145 Q 65 130 50 125"
+            stroke="#0d1321"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 82 138 Q 100 125 115 122"
+            stroke="#0d1321"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+          />
+          {/* canopy: many small overlapping circles for an organic, leafy silhouette */}
+          <g fill="#0d1321">
+            <circle cx="80" cy="120" r="46" />
+            <circle cx="48" cy="108" r="22" />
+            <circle cx="112" cy="110" r="24" />
+            <circle cx="62" cy="86" r="22" />
+            <circle cx="98" cy="84" r="24" />
+            <circle cx="80" cy="68" r="26" />
+            <circle cx="40" cy="118" r="14" />
+            <circle cx="120" cy="120" r="14" />
+            <circle cx="56" cy="74" r="14" />
+            <circle cx="106" cy="72" r="14" />
+            <circle cx="70" cy="56" r="14" />
+            <circle cx="92" cy="58" r="14" />
+            <circle cx="80" cy="46" r="12" />
+            <circle cx="36" cy="100" r="10" />
+            <circle cx="124" cy="98" r="10" />
+            <circle cx="88" cy="138" r="14" />
+            <circle cx="72" cy="138" r="14" />
+          </g>
         </svg>
       </motion.div>
     </>
