@@ -33,8 +33,8 @@ type Shooter = {
   length: number;
   angle: number;
   duration: number;
-  delay: number;
-  cycle: number;
+  dx: number;
+  dy: number;
 };
 
 type Bird = {
@@ -54,27 +54,30 @@ function ShootingStars() {
     let timer: number;
 
     const spawn = () => {
-      const angle = -25 + (Math.random() - 0.5) * 30;
+      // Down-left diagonal: 200°-230° in standard CSS rotation (0° = right, 90° = down)
+      const angleDeg = 200 + Math.random() * 30;
+      const angleRad = (angleDeg * Math.PI) / 180;
+      const distance = 110 + Math.random() * 30; // vw-ish travel distance
       const s: Shooter = {
         id: nextId++,
-        startX: Math.random() * 60,
-        startY: Math.random() * 50,
-        length: 140 + Math.random() * 160,
-        angle,
-        duration: 0.8 + Math.random() * 0.6,
-        delay: 0,
-        cycle: Date.now(),
+        startX: 92 + Math.random() * 18, // start just off the right edge
+        startY: Math.random() * 30, // upper portion of the sky
+        length: 160 + Math.random() * 140,
+        angle: angleDeg,
+        duration: 2.6 + Math.random() * 1.4, // 2.6 - 4.0s, much slower
+        dx: Math.cos(angleRad) * distance, // negative -> leftward
+        dy: Math.sin(angleRad) * distance * 0.9, // positive -> downward
       };
       setShooters((prev) => [...prev.slice(-4), s]);
-      timer = window.setTimeout(spawn, 2500 + Math.random() * 5500);
+      timer = window.setTimeout(spawn, 4000 + Math.random() * 7000);
     };
 
-    timer = window.setTimeout(spawn, 1500 + Math.random() * 2000);
+    timer = window.setTimeout(spawn, 1500 + Math.random() * 2500);
     return () => window.clearTimeout(timer);
   }, []);
 
   return (
-    <div className="absolute inset-0 z-[6] overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none">
       {shooters.map((s) => (
         <motion.div
           key={s.id}
@@ -84,19 +87,19 @@ function ShootingStars() {
             top: `${s.startY}%`,
             width: `${s.length}px`,
             height: "2px",
-            transform: `rotate(${s.angle}deg)`,
+            rotate: `${s.angle}deg`,
             transformOrigin: "left center",
             background:
               "linear-gradient(to right, rgba(240,235,216,0) 0%, rgba(240,235,216,0.85) 60%, rgba(255,255,255,1) 100%)",
             borderRadius: "2px",
             filter: "drop-shadow(0 0 4px rgba(240,235,216,0.6))",
           }}
-          initial={{ x: "-30%", opacity: 0, scaleX: 0.2 }}
-          animate={{ x: "120vw", opacity: [0, 1, 1, 0], scaleX: 1 }}
+          initial={{ x: 0, y: 0, opacity: 0 }}
+          animate={{ x: `${s.dx}vw`, y: `${s.dy}vh`, opacity: [0, 1, 1, 0] }}
           transition={{
             duration: s.duration,
             ease: "easeOut",
-            opacity: { duration: s.duration, times: [0, 0.1, 0.7, 1] },
+            opacity: { duration: s.duration, times: [0, 0.15, 0.75, 1] },
           }}
         />
       ))}
