@@ -325,7 +325,7 @@ function Clouds() {
   }, []);
 
   return (
-    <div className="absolute inset-0 z-[4] overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 z-[5] overflow-hidden pointer-events-none">
       {clouds.map((c) => (
         <motion.div
           key={c.id}
