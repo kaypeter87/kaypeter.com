@@ -611,7 +611,7 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
         className="absolute inset-0 z-0"
         style={{
           background:
-            "linear-gradient(to bottom, #023047 0%, #219ebc 45%, #8ecae6 100%)",
+            "linear-gradient(to bottom, #93cfff 0%, #b4e1ff 50%, #d4eeff 100%)",
         }}
       />
 
