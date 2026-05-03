@@ -1,8 +1,96 @@
 import { useMemo, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { createNoise2D } from "simplex-noise";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/hooks/use-theme";
+
+// Deterministic PRNG so each layer's procedural shape is stable across renders.
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = seed;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Build a natural-looking mountain ridge silhouette using multi-octave simplex noise.
+function generateRidge(opts: {
+  seed: number;
+  width: number;
+  height: number;
+  baselineY: number;
+  amplitude: number;
+  step?: number;
+  slope?: number;
+  freq?: number;
+  jitter?: number;
+}): string {
+  const rand = mulberry32(opts.seed);
+  const noise = createNoise2D(rand);
+  const step = opts.step ?? 6;
+  const freq = opts.freq ?? 1;
+  const jitter = opts.jitter ?? 0;
+  const points: [number, number][] = [];
+  for (let x = -160; x <= opts.width + 160; x += step) {
+    const t = (x + 160) / (opts.width + 320);
+    const slopeOffset = (opts.slope ?? 0) * (t - 0.5);
+    let h = 0;
+    h += noise(x * 0.0028 * freq, opts.seed * 0.13) * 1.0;
+    h += noise(x * 0.0072 * freq, opts.seed * 0.27) * 0.55;
+    h += noise(x * 0.018 * freq,  opts.seed * 0.59) * 0.28;
+    h += noise(x * 0.045 * freq,  opts.seed * 0.91) * 0.14;
+    h += (rand() - 0.5) * jitter;
+    const y = opts.baselineY - h * opts.amplitude + slopeOffset;
+    points.push([x, y]);
+  }
+  let d = `M ${points[0][0]} ${opts.height} L ${points[0][0]} ${points[0][1].toFixed(1)}`;
+  for (let i = 1; i < points.length; i++) {
+    d += ` L ${points[i][0]} ${points[i][1].toFixed(1)}`;
+  }
+  d += ` L ${points[points.length - 1][0]} ${opts.height} Z`;
+  return d;
+}
+
+// Build a natural pine tree silhouette with irregular needle clusters.
+function generatePineTree(seed: number): string {
+  const rand = mulberry32(seed);
+  // Vertical needle clusters arranged from top to bottom, each tier slightly
+  // wider and with small random offsets so no two trees look identical.
+  const tiers = 14 + Math.floor(rand() * 4);
+  const polys: string[] = [];
+  let y = 8;
+  for (let i = 0; i < tiers; i++) {
+    const t = i / (tiers - 1);
+    const baseWidth = 6 + t * 32;          // tier broadens toward base
+    const heightStep = 5 + t * 4;
+    const sway = (rand() - 0.5) * 3 * t;
+    const cx = 20 + sway;
+    const left = cx - baseWidth / 2;
+    const right = cx + baseWidth / 2;
+    const top = y;
+    const bottom = y + heightStep + 3;
+    // jagged needle row: sample several small triangles along the tier
+    const needles = Math.max(3, Math.floor(baseWidth / 3));
+    let row = `M ${left.toFixed(1)} ${bottom.toFixed(1)}`;
+    for (let n = 0; n <= needles; n++) {
+      const nt = n / needles;
+      const nx = left + nt * baseWidth;
+      // alternate up to a peak height with small noise
+      const peak = top + (rand() * 1.5);
+      const dipY = bottom - rand() * 1.2;
+      row += ` L ${(nx - 0.6).toFixed(1)} ${dipY.toFixed(1)}`;
+      row += ` L ${nx.toFixed(1)} ${peak.toFixed(1)}`;
+    }
+    row += ` L ${right.toFixed(1)} ${bottom.toFixed(1)} Z`;
+    polys.push(row);
+    y += heightStep;
+  }
+  return polys.join(" ");
+}
 
 type Star = {
   id: number;
@@ -197,18 +285,18 @@ function Birds() {
   );
 }
 
-function PineTree({ style }: { style: React.CSSProperties }) {
+function PineTree({ style, seed }: { style: React.CSSProperties; seed: number }) {
+  const path = useMemo(() => generatePineTree(seed), [seed]);
   return (
     <svg
       className="absolute"
       style={{ ...style, aspectRatio: "1 / 3" }}
-      viewBox="0 0 40 120"
+      viewBox="0 0 40 130"
       preserveAspectRatio="xMidYMax meet"
     >
       {/* trunk */}
-      <rect x="18" y="106" width="4" height="14" fill="#0d1321" />
-      {/* layered pine tiers — narrowing toward top */}
-      <polygon points="20,4 30,22 24,22 32,38 26,38 34,54 28,54 36,70 30,70 38,86 32,86 40,108 0,108 8,86 2,86 10,70 4,70 12,54 6,54 14,38 8,38 16,22 10,22" fill="#0d1321" />
+      <rect x="18.5" y="118" width="3" height="10" fill="#0d1321" />
+      <path d={path} fill="#0d1321" />
     </svg>
   );
 }
@@ -218,14 +306,44 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
   const starsY = useTransform(my, (v) => v * 18);
   const moonX = useTransform(mx, (v) => v * 30);
   const moonY = useTransform(my, (v) => v * 30);
-  const lowCloudX = useTransform(mx, (v) => v * 22);
-  const lowCloudY = useTransform(my, (v) => v * 22);
   const farHillX = useTransform(mx, (v) => v * 14);
   const farHillY = useTransform(my, (v) => v * 8);
   const midHillX = useTransform(mx, (v) => v * 26);
   const midHillY = useTransform(my, (v) => v * 14);
   const frontHillX = useTransform(mx, (v) => v * 42);
   const frontHillY = useTransform(my, (v) => v * 22);
+
+  // Procedurally generated mountain silhouettes — multi-octave noise + slight slope.
+  const W = 1440;
+  const H = 240;
+  const ridges = useMemo(
+    () => ({
+      farthest:  generateRidge({ seed: 11, width: W, height: H, baselineY: 175, amplitude: 60, slope: -25, freq: 0.85, jitter: 0.04, step: 4 }),
+      far:       generateRidge({ seed: 47, width: W, height: H, baselineY: 195, amplitude: 70, slope: -20, freq: 1.0,  jitter: 0.05, step: 4 }),
+      mid:       generateRidge({ seed: 73, width: W, height: H, baselineY: 215, amplitude: 65, slope: -10, freq: 1.15, jitter: 0.06, step: 3 }),
+      near:      generateRidge({ seed: 109, width: W, height: H, baselineY: 230, amplitude: 50, slope: 0,   freq: 1.3,  jitter: 0.08, step: 3 }),
+    }),
+    [],
+  );
+
+  // Foreground left hill — a single big slope with noise-based texture along the top.
+  const frontHillPath = useMemo(() => {
+    const rand = mulberry32(211);
+    const noise = createNoise2D(rand);
+    const fh = 480;
+    const pts: [number, number][] = [];
+    for (let x = -160; x <= 600; x += 4) {
+      // rises from upper-left (low y) sweeping diagonally down to the right
+      const t = (x + 160) / 760;
+      const base = 80 + t * 380;
+      const n = noise(x * 0.012, 1.7) * 8 + noise(x * 0.04, 5.1) * 3;
+      pts.push([x, base + n]);
+    }
+    let d = `M -160 ${fh}`;
+    for (const [x, y] of pts) d += ` L ${x} ${y.toFixed(1)}`;
+    d += ` L 600 ${fh} Z`;
+    return d;
+  }, []);
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
     for (let i = 0; i < 100; i++) {
@@ -336,7 +454,21 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <ShootingStars />
 
-      {/* Distant mountain ridge — farthest, lightest, jagged */}
+      {/* Shared SVG defs: a subtle turbulence/displacement filter to roughen edges */}
+      <svg className="absolute" width="0" height="0" style={{ position: "absolute" }}>
+        <defs>
+          <filter id="ridgeRough" x="-2%" y="-10%" width="104%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" />
+          </filter>
+          <filter id="ridgeRoughStrong" x="-2%" y="-10%" width="104%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* Procedural mountain ridges — multi-octave noise + organic edge displacement */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[6] pointer-events-none"
         style={{ x: farHillX, y: farHillY, height: "32%" }}
@@ -347,15 +479,10 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path
-            d="M -100 200 L 60 175 L 140 160 L 220 180 L 320 145 L 410 170 L 510 138 L 600 165 L 710 130 L 820 158 L 930 125 L 1040 152 L 1150 132 L 1260 158 L 1370 140 L 1540 165 L 1540 240 L -100 240 Z"
-            fill="#748cab"
-            opacity="0.28"
-          />
+          <path d={ridges.farthest} fill="#748cab" opacity="0.28" filter="url(#ridgeRough)" />
         </svg>
       </motion.div>
 
-      {/* Mid-far ridge — slightly closer */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[7] pointer-events-none"
         style={{ x: farHillX, y: farHillY, height: "30%" }}
@@ -366,15 +493,10 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path
-            d="M -100 215 L 80 175 L 180 195 L 280 158 L 380 188 L 480 150 L 580 182 L 680 145 L 790 178 L 900 152 L 1010 188 L 1120 165 L 1230 195 L 1340 178 L 1540 200 L 1540 240 L -100 240 Z"
-            fill="#3e5c76"
-            opacity="0.55"
-          />
+          <path d={ridges.far} fill="#3e5c76" opacity="0.55" filter="url(#ridgeRough)" />
         </svg>
       </motion.div>
 
-      {/* Mid ridge — clearer peaks */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[8] pointer-events-none"
         style={{ x: midHillX, y: midHillY, height: "28%" }}
@@ -385,15 +507,10 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path
-            d="M -100 220 L 60 195 L 140 175 L 220 200 L 310 168 L 400 198 L 490 160 L 580 195 L 680 175 L 780 205 L 880 188 L 980 215 L 1090 200 L 1200 220 L 1320 210 L 1440 222 L 1540 215 L 1540 240 L -100 240 Z"
-            fill="#1d2d44"
-            opacity="0.88"
-          />
+          <path d={ridges.mid} fill="#1d2d44" opacity="0.9" filter="url(#ridgeRoughStrong)" />
         </svg>
       </motion.div>
 
-      {/* Near ridge — even darker, biased left */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[9] pointer-events-none"
         style={{ x: midHillX, y: midHillY, height: "32%" }}
@@ -404,15 +521,11 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path
-            d="M -100 200 L 80 165 L 180 190 L 280 175 L 380 210 L 490 200 L 600 222 L 720 215 L 840 228 L 960 222 L 1080 230 L 1200 226 L 1320 232 L 1540 230 L 1540 240 L -100 240 Z"
-            fill="#0d1321"
-            opacity="0.92"
-          />
+          <path d={ridges.near} fill="#0d1321" opacity="0.94" filter="url(#ridgeRoughStrong)" />
         </svg>
       </motion.div>
 
-      {/* Foreground LEFT hill — rises high on the left, tapers down to the right */}
+      {/* Foreground LEFT hill — procedural slope with noise-based crest texture */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[10] pointer-events-none"
         style={{ x: frontHillX, y: frontHillY, height: "62%" }}
@@ -423,25 +536,21 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 480"
           preserveAspectRatio="none"
         >
-          {/* Big diagonal hill ramping from upper-left down to mid */}
-          <path
-            d="M -100 80 C 60 110, 180 180, 300 250 C 380 300, 440 350, 520 430 L 520 480 L -100 480 Z"
-            fill="#0d1321"
-          />
+          <path d={frontHillPath} fill="#0d1321" filter="url(#ridgeRoughStrong)" />
         </svg>
 
-        {/* Pine trees clustered on the foreground left hill */}
+        {/* Pine trees clustered on the foreground left hill — each with its own seed */}
         <div
           className="absolute"
           style={{ left: "0%", bottom: "35%", width: "30%", height: "55%" }}
         >
-          <PineTree style={{ left: "2%",  bottom: "28%", height: "78%"  }} />
-          <PineTree style={{ left: "10%", bottom: "20%", height: "92%"  }} />
-          <PineTree style={{ left: "18%", bottom: "10%", height: "100%" }} />
-          <PineTree style={{ left: "28%", bottom: "0%",  height: "80%"  }} />
-          <PineTree style={{ left: "40%", bottom: "-8%", height: "70%"  }} />
-          <PineTree style={{ left: "52%", bottom: "-18%", height: "58%" }} />
-          <PineTree style={{ left: "62%", bottom: "-28%", height: "48%" }} />
+          <PineTree seed={3}  style={{ left: "2%",  bottom: "28%", height: "78%"  }} />
+          <PineTree seed={17} style={{ left: "10%", bottom: "20%", height: "92%"  }} />
+          <PineTree seed={29} style={{ left: "18%", bottom: "10%", height: "100%" }} />
+          <PineTree seed={41} style={{ left: "28%", bottom: "0%",  height: "80%"  }} />
+          <PineTree seed={53} style={{ left: "40%", bottom: "-8%", height: "70%"  }} />
+          <PineTree seed={67} style={{ left: "52%", bottom: "-18%", height: "58%" }} />
+          <PineTree seed={79} style={{ left: "62%", bottom: "-28%", height: "48%" }} />
         </div>
       </motion.div>
     </>
