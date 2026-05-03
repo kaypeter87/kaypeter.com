@@ -54,23 +54,30 @@ function ShootingStars() {
     let timer: number;
 
     const spawn = () => {
-      // Random direction in full 360° — but bias slightly toward downward arcs
-      // so they read as "falling" rather than "rising".
-      const angleDeg = Math.random() * 360;
+      // Pick from four diagonal quadrants so the streak always travels at a
+      // believable diagonal, never purely horizontal or vertical.
+      const quadrants: Array<[number, number]> = [
+        [25, 65],   // down-right
+        [115, 155], // down-left
+        [205, 245], // up-left
+        [295, 335], // up-right
+      ];
+      const [minA, maxA] = quadrants[Math.floor(Math.random() * quadrants.length)];
+      const angleDeg = minA + Math.random() * (maxA - minA);
       const angleRad = (angleDeg * Math.PI) / 180;
-      const distance = 55 + Math.random() * 35; // shorter travel so they stay in view
+      const distance = 35 + Math.random() * 25; // 35-60vw — short, in-view arc
       const s: Shooter = {
         id: nextId++,
-        startX: 20 + Math.random() * 60, // centered-ish: 20-80% horizontally
-        startY: 10 + Math.random() * 55, // middle band of the sky
-        length: 140 + Math.random() * 140,
+        startX: 25 + Math.random() * 50, // 25-75% horizontally
+        startY: 15 + Math.random() * 45, // 15-60% vertically
+        length: 130 + Math.random() * 130,
         angle: angleDeg,
-        duration: 2.6 + Math.random() * 1.4,
+        duration: 1.8 + Math.random() * 1.0, // 1.8-2.8s, brief but visible
         dx: Math.cos(angleRad) * distance,
         dy: Math.sin(angleRad) * distance,
       };
       setShooters((prev) => [...prev.slice(-4), s]);
-      timer = window.setTimeout(spawn, 3500 + Math.random() * 6000);
+      timer = window.setTimeout(spawn, 4000 + Math.random() * 6000);
     };
 
     timer = window.setTimeout(spawn, 1500 + Math.random() * 2500);
@@ -95,12 +102,26 @@ function ShootingStars() {
             borderRadius: "2px",
             filter: "drop-shadow(0 0 4px rgba(240,235,216,0.6))",
           }}
-          initial={{ x: 0, y: 0, opacity: 0 }}
-          animate={{ x: `${s.dx}vw`, y: `${s.dy}vh`, opacity: [0, 1, 1, 0] }}
+          initial={{ x: 0, y: 0, opacity: 0, scaleX: 0.4 }}
+          animate={{
+            x: `${s.dx}vw`,
+            y: `${s.dy}vh`,
+            opacity: [0, 0.4, 1, 0.85, 0],
+            scaleX: [0.4, 0.85, 1, 1, 0.9],
+          }}
           transition={{
             duration: s.duration,
-            ease: "easeOut",
-            opacity: { duration: s.duration, times: [0, 0.15, 0.75, 1] },
+            ease: [0.25, 0.55, 0.45, 1], // gentle easeInOut for natural motion
+            opacity: {
+              duration: s.duration,
+              times: [0, 0.18, 0.45, 0.72, 1],
+              ease: "easeInOut",
+            },
+            scaleX: {
+              duration: s.duration,
+              times: [0, 0.2, 0.5, 0.8, 1],
+              ease: "easeOut",
+            },
           }}
         />
       ))}
