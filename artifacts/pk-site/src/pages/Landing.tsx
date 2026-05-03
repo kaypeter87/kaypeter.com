@@ -103,16 +103,6 @@ type Star = {
   twinkleDuration: number | null;
 };
 
-type Cloud = {
-  id: number;
-  y: number;
-  scale: number;
-  opacity: number;
-  duration: number;
-  delay: number;
-  puffs: { dx: number; dy: number; r: number }[];
-};
-
 type Shooter = {
   id: number;
   startX: number;
@@ -282,6 +272,82 @@ function Birds() {
           }}
         >
           <BirdShape flapDuration={bird.flapDuration} />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+type Cloud = {
+  id: number;
+  y: number;
+  scale: number;
+  duration: number;
+  delay: number;
+  opacity: number;
+  variant: number;
+};
+
+function CloudShape({ variant }: { variant: number }) {
+  // Two slightly different soft cloud silhouettes for variety.
+  const paths = [
+    "M20,40 Q20,22 38,22 Q44,10 62,12 Q78,4 92,16 Q112,12 116,30 Q132,32 132,46 Q132,58 116,58 L34,58 Q20,58 20,40 Z",
+    "M16,46 Q16,30 32,30 Q38,18 56,20 Q70,10 86,22 Q104,18 110,34 Q124,36 124,48 Q124,58 108,58 L28,58 Q16,58 16,46 Z",
+  ];
+  return (
+    <svg
+      width="160"
+      height="64"
+      viewBox="0 0 140 64"
+      fill="none"
+      style={{ display: "block" }}
+    >
+      <path d={paths[variant % paths.length]} fill="white" />
+    </svg>
+  );
+}
+
+function Clouds() {
+  const clouds = useMemo<Cloud[]>(() => {
+    const items: Cloud[] = [];
+    for (let i = 0; i < 5; i++) {
+      items.push({
+        id: i,
+        y: 6 + Math.random() * 32,
+        scale: 0.7 + Math.random() * 1.1,
+        duration: 180 + Math.random() * 140,
+        delay: -Math.random() * 250,
+        opacity: 0.55 + Math.random() * 0.3,
+        variant: i % 2,
+      });
+    }
+    return items;
+  }, []);
+
+  return (
+    <div className="absolute inset-0 z-[4] overflow-hidden pointer-events-none">
+      {clouds.map((c) => (
+        <motion.div
+          key={c.id}
+          className="absolute"
+          style={{
+            top: `${c.y}%`,
+            left: 0,
+            transform: `scale(${c.scale})`,
+            transformOrigin: "left center",
+            opacity: c.opacity,
+            filter: "blur(1px)",
+          }}
+          initial={{ x: "-20vw" }}
+          animate={{ x: "120vw" }}
+          transition={{
+            duration: c.duration,
+            delay: c.delay,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          <CloudShape variant={c.variant} />
         </motion.div>
       ))}
     </div>
@@ -653,6 +719,8 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
           }}
         />
       </motion.div>
+
+      <Clouds />
 
       <Birds />
 
