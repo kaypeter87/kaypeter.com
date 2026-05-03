@@ -53,32 +53,31 @@ function ShootingStars() {
     let nextId = 0;
     let timer: number;
 
+    // Pick a single "shower direction" on mount, like a real meteor shower
+    // radiant. All meteors fall in roughly this direction with small variance.
+    // 65-80° = mostly downward with a gentle diagonal lean.
+    const baseAngle = 65 + Math.random() * 15;
+
     const spawn = () => {
-      // Two downward diagonal quadrants — meteors always fall.
-      const quadrants: Array<[number, number]> = [
-        [30, 60],   // down-right
-        [120, 150], // down-left
-      ];
-      const [minA, maxA] = quadrants[Math.floor(Math.random() * quadrants.length)];
-      const angleDeg = minA + Math.random() * (maxA - minA);
+      const angleDeg = baseAngle + (Math.random() - 0.5) * 8; // small variance
       const angleRad = (angleDeg * Math.PI) / 180;
-      const distance = 28 + Math.random() * 22; // travel distance in vw
-      const length = 130 + Math.random() * 110; // streak length in px
+      const distance = 90 + Math.random() * 30; // travel ~full sky
+      const length = 80 + Math.random() * 90;   // streak length px
       const s: Shooter = {
         id: nextId++,
-        startX: 20 + Math.random() * 60,
-        startY: 5 + Math.random() * 30,
+        startX: -10 + Math.random() * 100, // span the whole top
+        startY: -10 + Math.random() * 15,  // start above or just inside top
         length,
         angle: angleDeg,
-        duration: 1.0 + Math.random() * 0.6, // 1.0-1.6s
+        duration: 1.4 + Math.random() * 1.0, // 1.4-2.4s
         dx: Math.cos(angleRad) * distance,
         dy: Math.sin(angleRad) * distance,
       };
-      setShooters((prev) => [...prev.slice(-4), s]);
-      timer = window.setTimeout(spawn, 5000 + Math.random() * 8000);
+      setShooters((prev) => [...prev.slice(-7), s]);
+      timer = window.setTimeout(spawn, 1400 + Math.random() * 2200);
     };
 
-    timer = window.setTimeout(spawn, 1500 + Math.random() * 2500);
+    timer = window.setTimeout(spawn, 800 + Math.random() * 1500);
     return () => window.clearTimeout(timer);
   }, []);
 
