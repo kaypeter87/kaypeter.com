@@ -351,24 +351,6 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     ],
     [],
   );
-  // Linear-interp lookup of the hill surface y for any x in viewBox space.
-  const frontHillSurfaceY = useMemo(() => {
-    return (x: number): number => {
-      const keys = frontHillKeys;
-      if (x <= keys[0][0]) return keys[0][1];
-      if (x >= keys[keys.length - 1][0]) return keys[keys.length - 1][1];
-      for (let i = 0; i < keys.length - 1; i++) {
-        const [x1, y1] = keys[i];
-        const [x2, y2] = keys[i + 1];
-        if (x >= x1 && x <= x2) {
-          const t = (x - x1) / (x2 - x1);
-          return y1 + (y2 - y1) * t;
-        }
-      }
-      return 480;
-    };
-  }, [frontHillKeys]);
-
   const frontHillPath = useMemo(() => {
     const rand = mulberry32(211);
     const noise = createNoise2D(rand);
@@ -393,70 +375,6 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     d += ` L 780 ${fh} Z`;
     return d;
   }, [frontHillKeys]);
-
-  // Procedurally scatter a DENSE forest across the foreground hill. Trees are
-  // packed tightly so their silhouettes overlap and merge into a continuous
-  // tree-line mass (rather than reading as individual sparse trees).
-  // Each tree's y is computed from the actual hill surface so they always sit
-  // exactly on the silhouette regardless of viewport size.
-  const trees = useMemo(() => {
-    const rand = mulberry32(607);
-    const items: {
-      seed: number;
-      x: number;
-      h: number;
-      surfaceY: number;
-      tree: ReturnType<typeof generatePineTree>;
-    }[] = [];
-
-    let nextSeed = 1009;
-    const push = (x: number, h: number) => {
-      items.push({
-        seed: nextSeed,
-        x,
-        h,
-        surfaceY: frontHillSurfaceY(x),
-        tree: generatePineTree(nextSeed),
-      });
-      nextSeed += 7;
-    };
-
-    // 1) BACK ROW — taller trees forming the silhouette's top edge. Densely
-    //    packed so canopies overlap heavily.
-    for (let x = -50; x < 340; x += 2.2 + rand() * 1.8) {
-      const heightFactor = Math.max(0.55, 1 - (x + 50) / 480);
-      const h = (110 + rand() * 70) * heightFactor;
-      push(x + (rand() - 0.5) * 3, h);
-    }
-
-    // 2) MID ROW — slightly shorter trees offset to fill gaps between back-row
-    //    trees, adding visual mass to the silhouette.
-    for (let x = -40; x < 330; x += 2.5 + rand() * 1.8) {
-      const heightFactor = Math.max(0.5, 1 - (x + 40) / 460);
-      const h = (75 + rand() * 55) * heightFactor;
-      push(x + (rand() - 0.5) * 4, h);
-    }
-
-    // 3) FRONT ROW — small understory trees nestled at ground level along the
-    //    crest, giving the canopy a textured, busy base.
-    for (let x = -30; x < 320; x += 3 + rand() * 2) {
-      const heightFactor = Math.max(0.45, 1 - (x + 30) / 440);
-      const h = (45 + rand() * 35) * heightFactor;
-      push(x + (rand() - 0.5) * 5, h);
-    }
-
-    // 4) Trailing scatter further down the slope for depth
-    for (let x = 340; x < 560; x += 4 + rand() * 5) {
-      const h = 20 + rand() * 35;
-      push(x + (rand() - 0.5) * 4, h);
-    }
-
-    // Sort by surfaceY ascending so trees higher on the hill render BEHIND
-    // trees lower down — gives a layered, depth-rich forest silhouette where
-    // overlapping crowns naturally merge into a single dark mass.
-    items.sort((a, b) => a.surfaceY - b.surfaceY);
-    return items;
-  }, [frontHillSurfaceY]);
 
   // Bottom-RIGHT massif — rises from the bottom-right corner up and to the
   // left, meeting the foreground left hill near the center-bottom.
@@ -702,26 +620,6 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           preserveAspectRatio="none"
         >
           <path d={frontHillPath} fill="#0d1321" filter="url(#ridgeRoughStrong)" />
-          {trees.map((t) => {
-            // Tree's natural viewBox is 40 wide × 130 tall; scale by height.
-            const scale = t.h / 130;
-            const w = 40 * scale;
-            // Translate so the tree's BASE (y=118 in its own viewBox) sits on
-            // the hill surface, with a few units of buried trunk for grounding.
-            const baseOffset = 118 * scale;
-            return (
-              <g
-                key={t.seed}
-                transform={`translate(${t.x - w / 2}, ${t.surfaceY - baseOffset}) scale(${scale})`}
-                fill="#0d1321"
-              >
-                <path d={t.tree.trunk} />
-                {t.tree.tiers.map((d, i) => (
-                  <path key={i} d={d} />
-                ))}
-              </g>
-            );
-          })}
         </svg>
       </motion.div>
     </>
@@ -881,25 +779,21 @@ export default function Landing() {
 
   return (
     <div className="relative w-full min-h-[100dvh] overflow-hidden bg-background text-foreground font-serif selection:bg-primary selection:text-primary-foreground">
-      <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20">
+      <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20 flex items-center gap-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 2, delay: 1 }}
+          className="text-xs tracking-[0.3em] uppercase text-muted-foreground font-light"
+        >
+          EST. 2026
+        </motion.div>
         <ThemeToggle />
       </div>
 
       {mounted && (isDark ? <NightSky mx={mx} my={my} /> : <DaySky mx={mx} my={my} />)}
 
-      <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-16 pointer-events-none">
-        <div className="flex justify-between items-start w-full">
-          <div />
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 2, delay: 1 }}
-            className="text-xs tracking-[0.3em] uppercase text-muted-foreground font-light pr-12 md:pr-16"
-          >
-            EST. 2026
-          </motion.div>
-        </div>
-
+      <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 md:p-16 pointer-events-none">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full gap-8">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -910,10 +804,7 @@ export default function Landing() {
             <h1 className="text-sm md:text-base tracking-[0.2em] font-light leading-relaxed text-foreground lowercase">
               peter kay &mdash; journal &amp; work
             </h1>
-            <p
-              className="mt-2 text-xs tracking-[0.3em] font-light text-muted-foreground"
-              style={{ fontFamily: "'Source Han Serif K', 'Noto Serif KR', serif" }}
-            >
+            <p className="mt-2 text-xs tracking-[0.3em] uppercase font-light text-muted-foreground">
               계성우
             </p>
           </motion.div>
