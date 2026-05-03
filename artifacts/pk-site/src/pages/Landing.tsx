@@ -102,16 +102,13 @@ function ShootingStars() {
             borderRadius: "2px",
             filter: "drop-shadow(0 0 4px rgba(240,235,216,0.6))",
           }}
-          initial={{ x: 0, y: 0, opacity: 0, scaleX: 0.4 }}
+          initial={{ opacity: 0, scaleX: 0 }}
           animate={{
-            x: `${s.dx}vw`,
-            y: `${s.dy}vh`,
-            opacity: [0, 0.4, 1, 0.85, 0],
-            scaleX: [0.4, 0.85, 1, 1, 0.9],
+            opacity: [0, 0.5, 1, 0.85, 0],
+            scaleX: [0, 0.5, 1, 1, 1],
           }}
           transition={{
             duration: s.duration,
-            ease: [0.25, 0.55, 0.45, 1], // gentle easeInOut for natural motion
             opacity: {
               duration: s.duration,
               times: [0, 0.18, 0.45, 0.72, 1],
@@ -119,8 +116,8 @@ function ShootingStars() {
             },
             scaleX: {
               duration: s.duration,
-              times: [0, 0.2, 0.5, 0.8, 1],
-              ease: "easeOut",
+              times: [0, 0.25, 0.55, 1, 1],
+              ease: [0.25, 0.55, 0.45, 1],
             },
           }}
         />
