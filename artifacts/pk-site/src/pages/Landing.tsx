@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState } from "react";
 import { Link } from "wouter";
-import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { animate, motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
 import { createNoise2D } from "simplex-noise";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/hooks/use-theme";
@@ -607,11 +607,35 @@ const DAY_PALETTE: MountainPalette = {
   front:    "#344e41",
 };
 
-function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
+function NightSky({
+  mx,
+  my,
+  isDark,
+}: {
+  mx: MotionValue<number>;
+  my: MotionValue<number>;
+  isDark: boolean;
+}) {
   const starsX = useTransform(mx, (v) => v * 18);
   const starsY = useTransform(my, (v) => v * 18);
   const moonX = useTransform(mx, (v) => v * 30);
   const moonY = useTransform(my, (v) => v * 30);
+
+  // Theme-driven Y offset: moon "rises" into view (0) when dark, "sets" below
+  // the horizon (large positive value) when transitioning to light.
+  const moonSetOffset = useMotionValue(isDark ? 0 : 1);
+  useEffect(() => {
+    const target = isDark ? 0 : 1;
+    const controls = animate(moonSetOffset, target, {
+      duration: 1.8,
+      ease: [0.4, 0, 0.6, 1],
+    });
+    return () => controls.stop();
+  }, [isDark, moonSetOffset]);
+  const moonFinalY = useTransform([moonY, moonSetOffset], ([py, off]) => {
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+    return (py as number) + (off as number) * vh * 0.95;
+  });
 
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
@@ -633,7 +657,12 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
   }, []);
 
   return (
-    <>
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      initial={false}
+      animate={{ opacity: isDark ? 1 : 0 }}
+      transition={{ duration: 1.8, ease: "easeInOut" }}
+    >
       <motion.div className="absolute inset-0 z-0" style={{ x: starsX, y: starsY }}>
         {stars.map((star) => (
           <motion.div
@@ -680,7 +709,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           left: "26%",
           top: "20%",
           x: moonX,
-          y: moonY,
+          y: moonFinalY,
           translateX: "-50%",
           translateY: "-50%",
         }}
@@ -724,16 +753,45 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       <ShootingStars />
 
       <Mountains mx={mx} my={my} colors={NIGHT_PALETTE} />
-    </>
+    </motion.div>
   );
 }
 
-function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
+function DaySky({
+  mx,
+  my,
+  isDark,
+}: {
+  mx: MotionValue<number>;
+  my: MotionValue<number>;
+  isDark: boolean;
+}) {
   const sunX = useTransform(mx, (v) => v * 30);
   const sunY = useTransform(my, (v) => v * 30);
 
+  // Theme-driven Y offset: sun is at rest (0) when light; "sets" below the
+  // horizon when transitioning to dark.
+  const sunSetOffset = useMotionValue(isDark ? 1 : 0);
+  useEffect(() => {
+    const target = isDark ? 1 : 0;
+    const controls = animate(sunSetOffset, target, {
+      duration: 1.8,
+      ease: [0.4, 0, 0.6, 1],
+    });
+    return () => controls.stop();
+  }, [isDark, sunSetOffset]);
+  const sunFinalY = useTransform([sunY, sunSetOffset], ([py, off]) => {
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+    return (py as number) + (off as number) * vh * 0.95;
+  });
+
   return (
-    <>
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      initial={false}
+      animate={{ opacity: isDark ? 0 : 1 }}
+      transition={{ duration: 1.8, ease: "easeInOut" }}
+    >
       {/* Cool blue sky gradient — light at horizon, deepening toward the top */}
       <div
         className="absolute inset-0 z-0"
@@ -755,7 +813,7 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
           left: "26%",
           top: "20%",
           x: sunX,
-          y: sunY,
+          y: sunFinalY,
           translateX: "-50%",
           translateY: "-50%",
         }}
@@ -787,7 +845,7 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
       <Birds />
 
       <Mountains mx={mx} my={my} colors={DAY_PALETTE} />
-    </>
+    </motion.div>
   );
 }
 
@@ -850,7 +908,12 @@ export default function Landing() {
         <ThemeToggle />
       </div>
 
-      {mounted && (isDark ? <NightSky mx={mx} my={my} /> : <DaySky mx={mx} my={my} />)}
+      {mounted && (
+        <>
+          <DaySky mx={mx} my={my} isDark={isDark} />
+          <NightSky mx={mx} my={my} isDark={isDark} />
+        </>
+      )}
 
       <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 md:p-16 pointer-events-none">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full gap-8">
