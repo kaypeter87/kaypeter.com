@@ -55,54 +55,64 @@ function generateRidge(opts: {
   return d;
 }
 
-// Build a fir/pine silhouette as a single closed path. The outline is a chain
-// of drooping triangular branch tiers stacked from a sharp apex down to a wide
-// base — the classic conifer shape, but with per-tier noise so every tree is
-// unique.
-function generatePineTree(seed: number): string {
+// Build a wispy fir/pine the way the Adobe reference looks: a thin tapered
+// trunk + many individual drooping branches at irregular angles, with gaps of
+// sky showing through. Returns separate path strings so we render branches as
+// independent SVG elements (which reads as far more organic than one closed
+// silhouette).
+function generatePineTree(seed: number): { trunk: string; branches: string[] } {
   const rand = mulberry32(seed);
   const cx = 20;
-  const apexY = 4;
-  const baseY = 116;
-  const tiers = 9 + Math.floor(rand() * 3); // 9-11 branch tiers
+  const apexY = 6;
+  const baseY = 122;
   const totalH = baseY - apexY;
-  const maxHalf = 15 + rand() * 3;          // base half-width
 
-  type Pt = [number, number];
-  const rightEdge: Pt[] = [];
-  const leftEdge: Pt[] = [];
+  // Tapered trunk — thin pencil line that's a hair thicker at the base.
+  const trunk =
+    `M ${(cx - 0.35).toFixed(2)} ${apexY} ` +
+    `L ${(cx + 0.35).toFixed(2)} ${apexY} ` +
+    `L ${(cx + 1.1).toFixed(2)} ${baseY + 2} ` +
+    `L ${(cx - 1.1).toFixed(2)} ${baseY + 2} Z`;
 
-  for (let i = 1; i <= tiers; i++) {
-    const t = i / tiers;
-    // Quadratic taper: narrow near the apex, fanning out near the base.
-    const taper = t * t * 0.85 + t * 0.15;
-    const half = maxHalf * taper * (0.88 + rand() * 0.22);
-    const yMid = apexY + t * totalH;
-    // Each branch droops: tip sits slightly below the shoulder.
-    const shoulderY = yMid - (totalH / tiers) * 0.45;
-    const tipDrop = (totalH / tiers) * (0.35 + rand() * 0.35);
-    const tipY = yMid + tipDrop;
-    // Tiny independent jitter so left/right are not perfect mirrors.
-    const rJitter = (rand() - 0.5) * 1.2;
-    const lJitter = (rand() - 0.5) * 1.2;
+  const branches: string[] = [];
+  // Many short branches packed densely along the trunk; alternate sides with
+  // occasional skips so the silhouette feels asymmetric and natural.
+  const nBranches = 28 + Math.floor(rand() * 8);
+  const maxLen = 13 + rand() * 4;
+  let prevSide = -1;
+  for (let i = 0; i < nBranches; i++) {
+    const t = i / (nBranches - 1);
+    // Position along trunk — leave a small bare cap at the very top.
+    const y = apexY + 2 + t * (totalH - 4) + (rand() - 0.5) * 0.6;
+    // Length grows toward the base (cone profile) with per-branch noise.
+    const lengthEase = 0.12 + t * 0.88;
+    const len = maxLen * lengthEase * (0.7 + rand() * 0.55);
+    // Side choice: alternate but occasionally double-up or skip for asymmetry.
+    let side: number;
+    const r = rand();
+    if (r < 0.18) side = prevSide;            // same side again -> denser tuft
+    else if (r > 0.94) continue;              // skip -> visible gap
+    else side = -prevSide;
+    prevSide = side;
 
-    rightEdge.push([cx + half * 0.18, shoulderY]);
-    rightEdge.push([cx + half + rJitter, tipY]);
-    leftEdge.push([cx - half * 0.18, shoulderY]);
-    leftEdge.push([cx - half + lJitter, tipY]);
+    // Branch base attaches just inside the trunk; tip droops downward and out.
+    const baseX = cx + side * 0.3;
+    const wBase = 0.55 + rand() * 0.55;       // branch thickness near trunk
+    const droop = 1.4 + len * 0.18 + rand() * 1.2;
+    const tipX = cx + side * len + (rand() - 0.5) * 0.6;
+    const tipY = y + droop;
+
+    // Tapered branch: trunk-side has small width, tip is a single point.
+    branches.push(
+      `M ${baseX.toFixed(2)} ${(y - wBase * 0.5).toFixed(2)} ` +
+      `Q ${(baseX + side * len * 0.45).toFixed(2)} ${(y + droop * 0.15).toFixed(2)} ` +
+      `${tipX.toFixed(2)} ${tipY.toFixed(2)} ` +
+      `Q ${(baseX + side * len * 0.4).toFixed(2)} ${(y + droop * 0.55).toFixed(2)} ` +
+      `${baseX.toFixed(2)} ${(y + wBase * 0.5).toFixed(2)} Z`
+    );
   }
 
-  let d = `M ${cx} ${apexY}`;
-  for (const [x, y] of rightEdge) d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
-  // Trunk base — small flare so the tree sits on the ground naturally.
-  d += ` L ${(cx + 2).toFixed(1)} ${baseY}`;
-  d += ` L ${(cx - 2).toFixed(1)} ${baseY}`;
-  for (let i = leftEdge.length - 1; i >= 0; i--) {
-    const [x, y] = leftEdge[i];
-    d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
-  }
-  d += " Z";
-  return d;
+  return { trunk, branches };
 }
 
 type Star = {
@@ -299,17 +309,20 @@ function Birds() {
 }
 
 function PineTree({ style, seed }: { style: React.CSSProperties; seed: number }) {
-  const path = useMemo(() => generatePineTree(seed), [seed]);
+  const tree = useMemo(() => generatePineTree(seed), [seed]);
   return (
     <svg
       className="absolute"
-      style={{ ...style, aspectRatio: "1 / 3" }}
+      style={{ ...style, aspectRatio: "1 / 3.5" }}
       viewBox="0 0 40 130"
       preserveAspectRatio="xMidYMax meet"
     >
-      {/* small visible trunk peeking below the foliage */}
-      <rect x="19" y="115" width="2" height="14" fill="#0d1321" />
-      <path d={path} fill="#0d1321" />
+      <g fill="#0d1321">
+        <path d={tree.trunk} />
+        {tree.branches.map((d, i) => (
+          <path key={i} d={d} />
+        ))}
+      </g>
     </svg>
   );
 }
