@@ -55,66 +55,6 @@ function generateRidge(opts: {
   return d;
 }
 
-// Build a wispy fir/pine the way the Adobe reference looks: a thin tapered
-// trunk + many individual drooping branches at irregular angles, with gaps of
-// sky showing through. Returns separate path strings so we render branches as
-// independent SVG elements (which reads as far more organic than one closed
-// silhouette).
-function generatePineTree(seed: number): { trunk: string; branches: string[] } {
-  const rand = mulberry32(seed);
-  const cx = 20;
-  const apexY = 6;
-  const baseY = 122;
-  const totalH = baseY - apexY;
-
-  // Tapered trunk — thin pencil line that's a hair thicker at the base.
-  const trunk =
-    `M ${(cx - 0.35).toFixed(2)} ${apexY} ` +
-    `L ${(cx + 0.35).toFixed(2)} ${apexY} ` +
-    `L ${(cx + 1.1).toFixed(2)} ${baseY + 2} ` +
-    `L ${(cx - 1.1).toFixed(2)} ${baseY + 2} Z`;
-
-  const branches: string[] = [];
-  // Many short branches packed densely along the trunk; alternate sides with
-  // occasional skips so the silhouette feels asymmetric and natural.
-  const nBranches = 28 + Math.floor(rand() * 8);
-  const maxLen = 13 + rand() * 4;
-  let prevSide = -1;
-  for (let i = 0; i < nBranches; i++) {
-    const t = i / (nBranches - 1);
-    // Position along trunk — leave a small bare cap at the very top.
-    const y = apexY + 2 + t * (totalH - 4) + (rand() - 0.5) * 0.6;
-    // Length grows toward the base (cone profile) with per-branch noise.
-    const lengthEase = 0.12 + t * 0.88;
-    const len = maxLen * lengthEase * (0.7 + rand() * 0.55);
-    // Side choice: alternate but occasionally double-up or skip for asymmetry.
-    let side: number;
-    const r = rand();
-    if (r < 0.18) side = prevSide;            // same side again -> denser tuft
-    else if (r > 0.94) continue;              // skip -> visible gap
-    else side = -prevSide;
-    prevSide = side;
-
-    // Branch base attaches just inside the trunk; tip droops downward and out.
-    const baseX = cx + side * 0.3;
-    const wBase = 0.55 + rand() * 0.55;       // branch thickness near trunk
-    const droop = 1.4 + len * 0.18 + rand() * 1.2;
-    const tipX = cx + side * len + (rand() - 0.5) * 0.6;
-    const tipY = y + droop;
-
-    // Tapered branch: trunk-side has small width, tip is a single point.
-    branches.push(
-      `M ${baseX.toFixed(2)} ${(y - wBase * 0.5).toFixed(2)} ` +
-      `Q ${(baseX + side * len * 0.45).toFixed(2)} ${(y + droop * 0.15).toFixed(2)} ` +
-      `${tipX.toFixed(2)} ${tipY.toFixed(2)} ` +
-      `Q ${(baseX + side * len * 0.4).toFixed(2)} ${(y + droop * 0.55).toFixed(2)} ` +
-      `${baseX.toFixed(2)} ${(y + wBase * 0.5).toFixed(2)} Z`
-    );
-  }
-
-  return { trunk, branches };
-}
-
 type Star = {
   id: number;
   x: number;
@@ -308,25 +248,6 @@ function Birds() {
   );
 }
 
-function PineTree({ style, seed }: { style: React.CSSProperties; seed: number }) {
-  const tree = useMemo(() => generatePineTree(seed), [seed]);
-  return (
-    <svg
-      className="absolute"
-      style={{ ...style, aspectRatio: "1 / 3.5" }}
-      viewBox="0 0 40 130"
-      preserveAspectRatio="xMidYMax meet"
-    >
-      <g fill="#0d1321">
-        <path d={tree.trunk} />
-        {tree.branches.map((d, i) => (
-          <path key={i} d={d} />
-        ))}
-      </g>
-    </svg>
-  );
-}
-
 function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
   const starsX = useTransform(mx, (v) => v * 18);
   const starsY = useTransform(my, (v) => v * 18);
@@ -497,7 +418,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       {/* Procedural mountain ridges — multi-octave noise + organic edge displacement */}
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[6] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, height: "32%" }}
+        style={{ x: farHillX, y: farHillY, height: "44%" }}
       >
         <svg
           className="absolute"
@@ -511,7 +432,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[7] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, height: "30%" }}
+        style={{ x: farHillX, y: farHillY, height: "40%" }}
       >
         <svg
           className="absolute"
@@ -525,7 +446,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[8] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, height: "28%" }}
+        style={{ x: midHillX, y: midHillY, height: "37%" }}
       >
         <svg
           className="absolute"
@@ -539,7 +460,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <motion.div
         className="absolute inset-x-0 bottom-0 z-[9] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, height: "32%" }}
+        style={{ x: midHillX, y: midHillY, height: "42%" }}
       >
         <svg
           className="absolute"
@@ -565,19 +486,6 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           <path d={frontHillPath} fill="#0d1321" filter="url(#ridgeRoughStrong)" />
         </svg>
 
-        {/* Pine trees clustered on the foreground left hill — each with its own seed */}
-        <div
-          className="absolute"
-          style={{ left: "0%", bottom: "35%", width: "30%", height: "55%" }}
-        >
-          <PineTree seed={3}  style={{ left: "2%",  bottom: "28%", height: "78%"  }} />
-          <PineTree seed={17} style={{ left: "10%", bottom: "20%", height: "92%"  }} />
-          <PineTree seed={29} style={{ left: "18%", bottom: "10%", height: "100%" }} />
-          <PineTree seed={41} style={{ left: "28%", bottom: "0%",  height: "80%"  }} />
-          <PineTree seed={53} style={{ left: "40%", bottom: "-8%", height: "70%"  }} />
-          <PineTree seed={67} style={{ left: "52%", bottom: "-18%", height: "58%" }} />
-          <PineTree seed={79} style={{ left: "62%", bottom: "-28%", height: "48%" }} />
-        </div>
       </motion.div>
     </>
   );
