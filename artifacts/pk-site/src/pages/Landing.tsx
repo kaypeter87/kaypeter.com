@@ -307,11 +307,24 @@ function PineTree({ style, seed }: { style: React.CSSProperties; seed: number })
   );
 }
 
-function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
-  const starsX = useTransform(mx, (v) => v * 18);
-  const starsY = useTransform(my, (v) => v * 18);
-  const moonX = useTransform(mx, (v) => v * 30);
-  const moonY = useTransform(my, (v) => v * 30);
+type MountainPalette = {
+  farthest: string;
+  far: string;
+  mid: string;
+  near: string;
+  right: string;
+  front: string;
+};
+
+function Mountains({
+  mx,
+  my,
+  colors,
+}: {
+  mx: MotionValue<number>;
+  my: MotionValue<number>;
+  colors: MountainPalette;
+}) {
   const farHillX = useTransform(mx, (v) => v * 14);
   const farHillY = useTransform(my, (v) => v * 8);
   const midHillX = useTransform(mx, (v) => v * 26);
@@ -324,34 +337,18 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
   const H = 240;
   const ridges = useMemo(
     () => ({
-      // Smooth, rolling distant ridges (low amplitude, low frequency).
-      // Lower baselineY = higher peaks in the frame.
       farthest:  generateRidge({ seed: 11, width: W, height: H, baselineY: 110, amplitude: 45, slope: -8,  freq: 0.45, jitter: 0,    step: 6 }),
       far:       generateRidge({ seed: 47, width: W, height: H, baselineY: 135, amplitude: 55, slope: -6,  freq: 0.55, jitter: 0,    step: 6 }),
-      // Closer ridges with more defined peaks
       mid:       generateRidge({ seed: 73, width: W, height: H, baselineY: 165, amplitude: 70, slope: -4,  freq: 0.75, jitter: 0.02, step: 4 }),
       near:      generateRidge({ seed: 109, width: W, height: H, baselineY: 190, amplitude: 65, slope: 0,   freq: 0.95, jitter: 0.04, step: 3 }),
     }),
     [],
   );
 
-  // Foreground LEFT hill — high apex at top-left, with a small ledge/shoulder
-  // around 200-300 where the tree cluster sits, then ramps diagonally down to
-  // the right. Closely matches the silhouette in the reference photo.
-  // Hand-shaped key points (x, y in viewBox units), then sample with noise
-  // along the diagonal slope between them.
   const frontHillKeys: [number, number][] = useMemo(
     () => [
-      [-160, 10],
-      [40, 28],
-      [120, 60],
-      [200, 92],
-      [260, 110],
-      [320, 145],
-      [410, 215],
-      [520, 300],
-      [640, 405],
-      [780, 480],
+      [-160, 10], [40, 28], [120, 60], [200, 92], [260, 110],
+      [320, 145], [410, 215], [520, 300], [640, 405], [780, 480],
     ],
     [],
   );
@@ -359,12 +356,10 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     const rand = mulberry32(211);
     const noise = createNoise2D(rand);
     const fh = 480;
-    const keys = frontHillKeys;
-    // Linear interpolate along keys with noise jitter
     const pts: [number, number][] = [];
-    for (let i = 0; i < keys.length - 1; i++) {
-      const [x1, y1] = keys[i];
-      const [x2, y2] = keys[i + 1];
+    for (let i = 0; i < frontHillKeys.length - 1; i++) {
+      const [x1, y1] = frontHillKeys[i];
+      const [x2, y2] = frontHillKeys[i + 1];
       const seg = Math.max(8, Math.floor((x2 - x1) / 4));
       for (let j = 0; j <= seg; j++) {
         const t = j / seg;
@@ -380,20 +375,13 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     return d;
   }, [frontHillKeys]);
 
-  // Bottom-RIGHT massif — rises from the bottom-right corner up and to the
-  // left, meeting the foreground left hill near the center-bottom.
   const rightHillPath = useMemo(() => {
     const rand = mulberry32(317);
     const noise = createNoise2D(rand);
     const fh = 480;
     const keys: [number, number][] = [
-      [600, fh],
-      [780, 360],
-      [920, 280],
-      [1080, 210],
-      [1240, 160],
-      [1380, 125],
-      [1540, 100],
+      [600, fh], [780, 360], [920, 280], [1080, 210],
+      [1240, 160], [1380, 125], [1540, 100],
     ];
     const pts: [number, number][] = [];
     for (let i = 0; i < keys.length - 1; i++) {
@@ -413,6 +401,103 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     d += ` L 1540 ${fh} Z`;
     return d;
   }, []);
+
+  return (
+    <>
+      <svg className="absolute" width="0" height="0" style={{ position: "absolute" }}>
+        <defs>
+          <filter id="ridgeRough" x="-2%" y="-10%" width="104%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" />
+          </filter>
+          <filter id="ridgeRoughStrong" x="-2%" y="-10%" width="104%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" />
+          </filter>
+        </defs>
+      </svg>
+
+      <motion.div
+        className="absolute inset-x-0 z-[6] pointer-events-none"
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "92%" }}
+      >
+        <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
+          <path d={ridges.farthest} fill={colors.farthest} filter="url(#ridgeRough)" />
+        </svg>
+      </motion.div>
+
+      <motion.div
+        className="absolute inset-x-0 z-[7] pointer-events-none"
+        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "86%" }}
+      >
+        <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
+          <path d={ridges.far} fill={colors.far} filter="url(#ridgeRough)" />
+        </svg>
+      </motion.div>
+
+      <motion.div
+        className="absolute inset-x-0 z-[8] pointer-events-none"
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
+      >
+        <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
+          <path d={ridges.mid} fill={colors.mid} filter="url(#ridgeRoughStrong)" />
+        </svg>
+      </motion.div>
+
+      <motion.div
+        className="absolute inset-x-0 z-[9] pointer-events-none"
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "88%" }}
+      >
+        <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
+          <path d={ridges.near} fill={colors.near} filter="url(#ridgeRoughStrong)" />
+        </svg>
+      </motion.div>
+
+      <motion.div
+        className="absolute inset-x-0 z-[10] pointer-events-none"
+        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
+      >
+        <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 480" preserveAspectRatio="none">
+          <path d={rightHillPath} fill={colors.right} filter="url(#ridgeRoughStrong)" />
+        </svg>
+      </motion.div>
+
+      <motion.div
+        className="absolute inset-x-0 z-[11] pointer-events-none"
+        style={{ x: frontHillX, y: frontHillY, bottom: "-8%", height: "100%" }}
+      >
+        <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 480" preserveAspectRatio="none">
+          <path d={frontHillPath} fill={colors.front} filter="url(#ridgeRoughStrong)" />
+        </svg>
+      </motion.div>
+    </>
+  );
+}
+
+const NIGHT_PALETTE: MountainPalette = {
+  farthest: "#2a3548",
+  far:      "#283b50",
+  mid:      "#1b2940",
+  near:     "#101626",
+  right:    "#0d1321",
+  front:    "#0d1321",
+};
+
+const DAY_PALETTE: MountainPalette = {
+  farthest: "#c4c39a",
+  far:      "#9ba269",
+  mid:      "#606c38",
+  near:     "#424c20",
+  right:    "#283618",
+  front:    "#283618",
+};
+
+function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
+  const starsX = useTransform(mx, (v) => v * 18);
+  const starsY = useTransform(my, (v) => v * 18);
+  const moonX = useTransform(mx, (v) => v * 30);
+  const moonY = useTransform(my, (v) => v * 30);
+
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
     for (let i = 0; i < 100; i++) {
@@ -523,236 +608,68 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
       <ShootingStars />
 
-      {/* Shared SVG defs: a subtle turbulence/displacement filter to roughen edges */}
-      <svg className="absolute" width="0" height="0" style={{ position: "absolute" }}>
-        <defs>
-          <filter id="ridgeRough" x="-2%" y="-10%" width="104%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" />
-          </filter>
-          <filter id="ridgeRoughStrong" x="-2%" y="-10%" width="104%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" seed="7" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Procedural mountain ridges — each layer's bottom is anchored BELOW the
-          viewport so the parallax shift never exposes the SVG's straight edge. */}
-      <motion.div
-        className="absolute inset-x-0 z-[6] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "92%" }}
-      >
-        <svg
-          className="absolute"
-          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 240"
-          preserveAspectRatio="none"
-        >
-          <path d={ridges.farthest} fill="#2a3548" filter="url(#ridgeRough)" />
-        </svg>
-      </motion.div>
-
-      <motion.div
-        className="absolute inset-x-0 z-[7] pointer-events-none"
-        style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "86%" }}
-      >
-        <svg
-          className="absolute"
-          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 240"
-          preserveAspectRatio="none"
-        >
-          <path d={ridges.far} fill="#283b50" filter="url(#ridgeRough)" />
-        </svg>
-      </motion.div>
-
-      <motion.div
-        className="absolute inset-x-0 z-[8] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
-      >
-        <svg
-          className="absolute"
-          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 240"
-          preserveAspectRatio="none"
-        >
-          <path d={ridges.mid} fill="#1b2940" filter="url(#ridgeRoughStrong)" />
-        </svg>
-      </motion.div>
-
-      <motion.div
-        className="absolute inset-x-0 z-[9] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "88%" }}
-      >
-        <svg
-          className="absolute"
-          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 240"
-          preserveAspectRatio="none"
-        >
-          <path d={ridges.near} fill="#101626" filter="url(#ridgeRoughStrong)" />
-        </svg>
-      </motion.div>
-
-      {/* Bottom-RIGHT massif — anchored below the viewport to hide its straight base */}
-      <motion.div
-        className="absolute inset-x-0 z-[10] pointer-events-none"
-        style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
-      >
-        <svg
-          className="absolute"
-          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 480"
-          preserveAspectRatio="none"
-        >
-          <path d={rightHillPath} fill="#0d1321" filter="url(#ridgeRoughStrong)" />
-        </svg>
-      </motion.div>
-
-      {/* Foreground LEFT massif — high apex on the left with a tree ledge.
-          Trees are rendered INSIDE this SVG so they sit exactly on the
-          silhouette regardless of viewport size. */}
-      <motion.div
-        className="absolute inset-x-0 z-[11] pointer-events-none"
-        style={{ x: frontHillX, y: frontHillY, bottom: "-8%", height: "100%" }}
-      >
-        <svg
-          className="absolute"
-          style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }}
-          viewBox="0 0 1440 480"
-          preserveAspectRatio="none"
-        >
-          <path d={frontHillPath} fill="#0d1321" filter="url(#ridgeRoughStrong)" />
-        </svg>
-      </motion.div>
+      <Mountains mx={mx} my={my} colors={NIGHT_PALETTE} />
     </>
   );
 }
 
 function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
-  const sunX = useTransform(mx, (v) => v * 38);
-  const sunY = useTransform(my, (v) => v * 38);
-  const cloudsX = useTransform(mx, (v) => v * 14);
-  const cloudsY = useTransform(my, (v) => v * 14);
-  const clouds = useMemo<Cloud[]>(() => {
-    const items: Cloud[] = [];
-    for (let i = 0; i < 7; i++) {
-      const puffCount = 4 + Math.floor(Math.random() * 3);
-      const puffs: Cloud["puffs"] = [];
-      for (let p = 0; p < puffCount; p++) {
-        puffs.push({
-          dx: p * 22 + (Math.random() - 0.5) * 8,
-          dy: (Math.random() - 0.5) * 14,
-          r: 28 + Math.random() * 22,
-        });
-      }
-      items.push({
-        id: i,
-        y: 8 + Math.random() * 70,
-        scale: 0.6 + Math.random() * 0.9,
-        opacity: 0.55 + Math.random() * 0.35,
-        duration: 60 + Math.random() * 60,
-        delay: -Math.random() * 60,
-        puffs,
-      });
-    }
-    return items;
-  }, []);
+  const sunX = useTransform(mx, (v) => v * 30);
+  const sunY = useTransform(my, (v) => v * 30);
 
   return (
     <>
+      {/* Warm cream-toned sky gradient (matches the day palette) */}
       <div
         className="absolute inset-0 z-0"
         style={{
           background:
-            "linear-gradient(to bottom, #cfe0f0 0%, #e6e9dc 55%, #f0ebd8 100%)",
+            "linear-gradient(to bottom, #fefae0 0%, #f6e9c5 55%, #e8c89a 100%)",
         }}
       />
 
+      {/* Sun — placed in the same upper-left position the moon occupies in NightSky */}
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute left-1/2 top-1/2 z-[3] pointer-events-none"
+        className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(36vw, 36vh)",
-          height: "min(36vw, 36vh)",
+          width: "min(30vw, 40vh)",
+          height: "min(30vw, 40vh)",
+          left: "26%",
+          top: "20%",
           x: sunX,
           y: sunY,
           translateX: "-50%",
           translateY: "-50%",
         }}
       >
+        {/* Soft outer corona */}
         <motion.div
-          className="absolute inset-[-30%] rounded-full"
+          className="absolute inset-[-35%] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(255,220,150,0.45) 0%, rgba(255,220,150,0.18) 35%, transparent 70%)",
+              "radial-gradient(circle, rgba(221,161,94,0.45) 0%, rgba(221,161,94,0.18) 40%, transparent 72%)",
           }}
           animate={{ opacity: [0.85, 1, 0.85] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
+        {/* Sun disc */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 40% 40%, #fff4c2 0%, #ffd97a 35%, #f0a850 75%, #c87838 100%)",
+              "radial-gradient(circle at 40% 40%, #fefae0 0%, #f1d29a 40%, #dda15e 75%, #bc6c25 100%)",
             boxShadow:
-              "0 0 60px 12px rgba(255,200,100,0.35), 0 0 160px 40px rgba(255,200,100,0.18)",
+              "0 0 80px 20px rgba(221,161,94,0.35), 0 0 200px 60px rgba(188,108,37,0.18)",
           }}
         />
       </motion.div>
 
-      <motion.div
-        className="absolute inset-0 z-[4] overflow-hidden pointer-events-none"
-        style={{ x: cloudsX, y: cloudsY }}
-      >
-        {clouds.map((cloud) => {
-          const width = Math.max(...cloud.puffs.map((p) => p.dx + p.r * 2));
-          return (
-            <motion.div
-              key={cloud.id}
-              className="absolute"
-              style={{
-                top: `${cloud.y}%`,
-                left: 0,
-                opacity: cloud.opacity,
-                transform: `scale(${cloud.scale})`,
-                transformOrigin: "left center",
-              }}
-              initial={{ x: "-30vw" }}
-              animate={{ x: "130vw" }}
-              transition={{
-                duration: cloud.duration,
-                delay: cloud.delay,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            >
-              <svg
-                width={width}
-                height="120"
-                viewBox={`0 0 ${width} 120`}
-                style={{ display: "block", filter: "drop-shadow(0 4px 8px rgba(150,150,170,0.18))" }}
-              >
-                {cloud.puffs.map((p, i) => (
-                  <circle
-                    key={i}
-                    cx={p.dx + p.r}
-                    cy={60 + p.dy}
-                    r={p.r}
-                    fill="#ffffff"
-                    opacity="0.92"
-                  />
-                ))}
-              </svg>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-
       <Birds />
+
+      <Mountains mx={mx} my={my} colors={DAY_PALETTE} />
     </>
   );
 }
