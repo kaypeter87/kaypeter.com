@@ -546,7 +546,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path d={ridges.farthest} fill="#748cab" opacity="0.28" filter="url(#ridgeRough)" />
+          <path d={ridges.farthest} fill="#2a3548" filter="url(#ridgeRough)" />
         </svg>
       </motion.div>
 
@@ -560,7 +560,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path d={ridges.far} fill="#3e5c76" opacity="0.55" filter="url(#ridgeRough)" />
+          <path d={ridges.far} fill="#283b50" filter="url(#ridgeRough)" />
         </svg>
       </motion.div>
 
@@ -574,7 +574,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path d={ridges.mid} fill="#1d2d44" opacity="0.9" filter="url(#ridgeRoughStrong)" />
+          <path d={ridges.mid} fill="#1b2940" filter="url(#ridgeRoughStrong)" />
         </svg>
       </motion.div>
 
@@ -588,7 +588,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 240"
           preserveAspectRatio="none"
         >
-          <path d={ridges.near} fill="#0d1321" opacity="0.94" filter="url(#ridgeRoughStrong)" />
+          <path d={ridges.near} fill="#101626" filter="url(#ridgeRoughStrong)" />
         </svg>
       </motion.div>
 
