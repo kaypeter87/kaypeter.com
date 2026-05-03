@@ -26,6 +26,157 @@ type Cloud = {
   puffs: { dx: number; dy: number; r: number }[];
 };
 
+type Shooter = {
+  id: number;
+  startX: number;
+  startY: number;
+  length: number;
+  angle: number;
+  duration: number;
+  delay: number;
+  cycle: number;
+};
+
+type Bird = {
+  id: number;
+  y: number;
+  scale: number;
+  duration: number;
+  delay: number;
+  flapDuration: number;
+};
+
+function ShootingStars() {
+  const [shooters, setShooters] = useState<Shooter[]>([]);
+
+  useEffect(() => {
+    let nextId = 0;
+    let timer: number;
+
+    const spawn = () => {
+      const angle = -25 + (Math.random() - 0.5) * 30;
+      const s: Shooter = {
+        id: nextId++,
+        startX: Math.random() * 60,
+        startY: Math.random() * 50,
+        length: 140 + Math.random() * 160,
+        angle,
+        duration: 0.8 + Math.random() * 0.6,
+        delay: 0,
+        cycle: Date.now(),
+      };
+      setShooters((prev) => [...prev.slice(-4), s]);
+      timer = window.setTimeout(spawn, 2500 + Math.random() * 5500);
+    };
+
+    timer = window.setTimeout(spawn, 1500 + Math.random() * 2000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 z-[6] overflow-hidden pointer-events-none">
+      {shooters.map((s) => (
+        <motion.div
+          key={s.id}
+          className="absolute"
+          style={{
+            left: `${s.startX}%`,
+            top: `${s.startY}%`,
+            width: `${s.length}px`,
+            height: "2px",
+            transform: `rotate(${s.angle}deg)`,
+            transformOrigin: "left center",
+            background:
+              "linear-gradient(to right, rgba(240,235,216,0) 0%, rgba(240,235,216,0.85) 60%, rgba(255,255,255,1) 100%)",
+            borderRadius: "2px",
+            filter: "drop-shadow(0 0 4px rgba(240,235,216,0.6))",
+          }}
+          initial={{ x: "-30%", opacity: 0, scaleX: 0.2 }}
+          animate={{ x: "120vw", opacity: [0, 1, 1, 0], scaleX: 1 }}
+          transition={{
+            duration: s.duration,
+            ease: "easeOut",
+            opacity: { duration: s.duration, times: [0, 0.1, 0.7, 1] },
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function BirdShape({ flapDuration }: { flapDuration: number }) {
+  return (
+    <motion.svg
+      width="36"
+      height="20"
+      viewBox="0 0 36 20"
+      style={{ display: "block", overflow: "visible" }}
+      animate={{ scaleY: [1, 0.45, 1] }}
+      transition={{ duration: flapDuration, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <path
+        d="M 2 14 Q 9 2 18 11 Q 27 2 34 14"
+        stroke="#3e5c76"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </motion.svg>
+  );
+}
+
+function Birds() {
+  const birds = useMemo<Bird[]>(() => {
+    const items: Bird[] = [];
+    for (let i = 0; i < 4; i++) {
+      items.push({
+        id: i,
+        y: 12 + Math.random() * 45,
+        scale: 0.6 + Math.random() * 0.9,
+        duration: 28 + Math.random() * 22,
+        delay: -Math.random() * 30,
+        flapDuration: 0.45 + Math.random() * 0.35,
+      });
+    }
+    return items;
+  }, []);
+
+  return (
+    <div className="absolute inset-0 z-[6] overflow-hidden pointer-events-none">
+      {birds.map((bird) => (
+        <motion.div
+          key={bird.id}
+          className="absolute"
+          style={{
+            top: `${bird.y}%`,
+            left: 0,
+            transform: `scale(${bird.scale})`,
+            transformOrigin: "left center",
+          }}
+          initial={{ x: "-10vw" }}
+          animate={{ x: "115vw", y: [0, -8, 4, -6, 0] }}
+          transition={{
+            x: {
+              duration: bird.duration,
+              delay: bird.delay,
+              repeat: Infinity,
+              ease: "linear",
+            },
+            y: {
+              duration: bird.duration / 3,
+              delay: bird.delay,
+              repeat: Infinity,
+              ease: "easeInOut",
+            },
+          }}
+        >
+          <BirdShape flapDuration={bird.flapDuration} />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 function NightSky() {
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
@@ -125,6 +276,8 @@ function NightSky() {
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
       </motion.div>
+
+      <ShootingStars />
     </>
   );
 }
@@ -236,6 +389,8 @@ function DaySky() {
           );
         })}
       </div>
+
+      <Birds />
     </>
   );
 }
