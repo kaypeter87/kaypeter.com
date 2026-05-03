@@ -471,12 +471,12 @@ const NIGHT_PALETTE: MountainPalette = {
 };
 
 const DAY_PALETTE: MountainPalette = {
-  farthest: "#c4c39a",
-  far:      "#9ba269",
-  mid:      "#606c38",
-  near:     "#424c20",
-  right:    "#283618",
-  front:    "#283618",
+  farthest: "#dad7cd",
+  far:      "#a3b18a",
+  mid:      "#588157",
+  near:     "#3a5a40",
+  right:    "#344e41",
+  front:    "#344e41",
 };
 
 function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
@@ -606,12 +606,12 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
 
   return (
     <>
-      {/* Warm cream-toned sky gradient (matches the day palette) */}
+      {/* Cool blue sky gradient — light at horizon, deepening toward the top */}
       <div
         className="absolute inset-0 z-0"
         style={{
           background:
-            "linear-gradient(to bottom, #fefae0 0%, #f6e9c5 55%, #e8c89a 100%)",
+            "linear-gradient(to bottom, #023047 0%, #219ebc 45%, #8ecae6 100%)",
         }}
       />
 
@@ -637,7 +637,7 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
           className="absolute inset-[-35%] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(221,161,94,0.45) 0%, rgba(221,161,94,0.18) 40%, transparent 72%)",
+              "radial-gradient(circle, rgba(255,183,3,0.50) 0%, rgba(251,133,0,0.22) 40%, transparent 72%)",
           }}
           animate={{ opacity: [0.85, 1, 0.85] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -647,9 +647,9 @@ function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 40% 40%, #fefae0 0%, #f1d29a 40%, #dda15e 75%, #bc6c25 100%)",
+              "radial-gradient(circle at 40% 40%, #fff3c4 0%, #ffd45a 40%, #ffb703 75%, #fb8500 100%)",
             boxShadow:
-              "0 0 80px 20px rgba(221,161,94,0.35), 0 0 200px 60px rgba(188,108,37,0.18)",
+              "0 0 80px 20px rgba(255,183,3,0.35), 0 0 200px 60px rgba(251,133,0,0.18)",
           }}
         />
       </motion.div>
