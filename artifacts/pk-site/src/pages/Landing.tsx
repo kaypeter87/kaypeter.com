@@ -394,28 +394,59 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     return d;
   }, [frontHillKeys]);
 
-  // Tree positions in viewBox coords (matched to the hill key layout above).
+  // Procedurally scatter a forest across the upper portion of the foreground
+  // hill — denser on the apex/ledge, thinning out as the slope drops away.
   // Each tree's y is computed from the actual hill surface so they always sit
   // exactly on the silhouette regardless of viewport size.
   const trees = useMemo(() => {
-    const main = [
-      { seed: 17, x: 130, h: 138 },  // tallest, left side of cluster
-      { seed: 41, x: 95,  h: 110 },
-      { seed: 29, x: 165, h: 122 },
-      { seed: 53, x: 200, h: 100 },  // on the ledge plateau
-      { seed: 79, x: 235, h: 82 },
-      { seed: 89, x: 260, h: 64 },
-    ];
-    const distant = [
-      { seed: 113, x: 360, h: 38 },
-      { seed: 131, x: 395, h: 32 },
-      { seed: 149, x: 430, h: 28 },
-    ];
-    return [...main, ...distant].map((t) => ({
-      ...t,
-      surfaceY: frontHillSurfaceY(t.x),
-      tree: generatePineTree(t.seed),
-    }));
+    const rand = mulberry32(607);
+    const items: {
+      seed: number;
+      x: number;
+      h: number;
+      surfaceY: number;
+      tree: ReturnType<typeof generatePineTree>;
+    }[] = [];
+
+    // 1) Dense forest band across the upper hill (apex → past the ledge)
+    //    Walk x in small jittered steps so trees overlap & cluster organically.
+    let x = -40;
+    let i = 0;
+    while (x < 320) {
+      const jitter = (rand() - 0.5) * 6;
+      const px = x + jitter;
+      // Tree height scales with how high on the hill it sits — taller near the
+      // apex/ledge, shorter as the slope drops.
+      const heightFactor = Math.max(0.35, 1 - (px + 40) / 420);
+      const h = (60 + rand() * 90) * heightFactor;
+      items.push({
+        seed: 1009 + i * 7,
+        x: px,
+        h,
+        surfaceY: frontHillSurfaceY(px),
+        tree: generatePineTree(1009 + i * 7),
+      });
+      x += 4 + rand() * 7;
+      i++;
+    }
+
+    // 2) Sparser scatter further down the slope for depth
+    for (let k = 0; k < 14; k++) {
+      const px = 320 + rand() * 200;
+      const h = 22 + rand() * 28;
+      items.push({
+        seed: 4001 + k,
+        x: px,
+        h,
+        surfaceY: frontHillSurfaceY(px),
+        tree: generatePineTree(4001 + k),
+      });
+    }
+
+    // Sort by surfaceY ascending so trees higher on the hill render BEHIND
+    // trees lower down — gives a layered, depth-rich forest silhouette.
+    items.sort((a, b) => a.surfaceY - b.surfaceY);
+    return items;
   }, [frontHillSurfaceY]);
 
   // Bottom-RIGHT massif — rises from the bottom-right corner up and to the
