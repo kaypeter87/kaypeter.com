@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 type Theme = "dark" | "light";
 const STORAGE_KEY = "pk-theme";
@@ -50,12 +50,6 @@ export function useTheme() {
 
   const toggleTheme = useCallback(() => {
     setTheme(currentTheme === "dark" ? "light" : "dark");
-  }, []);
-
-  // Keep this for any callers still doing direct updates via useState elsewhere.
-  const [, force] = useState(0);
-  useEffect(() => {
-    return subscribe(() => force((n) => n + 1));
   }, []);
 
   return { theme, toggleTheme, setTheme };
