@@ -99,20 +99,12 @@ function ShootingStars() {
             borderRadius: "2px",
             filter: "drop-shadow(0 0 4px rgba(240,235,216,0.6))",
           }}
-          initial={{ x: 0, y: 0, opacity: 0 }}
-          animate={{
-            x: `${s.dx}vw`,
-            y: `${s.dy}vh`,
-            opacity: [0, 1, 1, 0],
-          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 1, 0] }}
           transition={{
             duration: s.duration,
-            ease: "linear",
-            opacity: {
-              duration: s.duration,
-              times: [0, 0.15, 0.7, 1],
-              ease: "easeOut",
-            },
+            times: [0, 0.2, 0.55, 1],
+            ease: "easeInOut",
           }}
         />
       ))}
