@@ -404,25 +404,12 @@ function Mountains({
 
   return (
     <>
-      <svg className="absolute" width="0" height="0" style={{ position: "absolute" }}>
-        <defs>
-          <filter id="ridgeRough" x="-2%" y="-10%" width="104%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" />
-          </filter>
-          <filter id="ridgeRoughStrong" x="-2%" y="-10%" width="104%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" seed="7" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" />
-          </filter>
-        </defs>
-      </svg>
-
       <motion.div
         className="absolute inset-x-0 z-[6] pointer-events-none"
         style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "92%" }}
       >
         <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
-          <path d={ridges.farthest} fill={colors.farthest} filter="url(#ridgeRough)" />
+          <path d={ridges.farthest} fill={colors.farthest} />
         </svg>
       </motion.div>
 
@@ -431,7 +418,7 @@ function Mountains({
         style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "86%" }}
       >
         <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
-          <path d={ridges.far} fill={colors.far} filter="url(#ridgeRough)" />
+          <path d={ridges.far} fill={colors.far} />
         </svg>
       </motion.div>
 
@@ -440,7 +427,7 @@ function Mountains({
         style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
       >
         <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
-          <path d={ridges.mid} fill={colors.mid} filter="url(#ridgeRoughStrong)" />
+          <path d={ridges.mid} fill={colors.mid} />
         </svg>
       </motion.div>
 
@@ -449,7 +436,7 @@ function Mountains({
         style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "88%" }}
       >
         <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 240" preserveAspectRatio="none">
-          <path d={ridges.near} fill={colors.near} filter="url(#ridgeRoughStrong)" />
+          <path d={ridges.near} fill={colors.near} />
         </svg>
       </motion.div>
 
@@ -458,7 +445,7 @@ function Mountains({
         style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
       >
         <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 480" preserveAspectRatio="none">
-          <path d={rightHillPath} fill={colors.right} filter="url(#ridgeRoughStrong)" />
+          <path d={rightHillPath} fill={colors.right} />
         </svg>
       </motion.div>
 
@@ -467,7 +454,7 @@ function Mountains({
         style={{ x: frontHillX, y: frontHillY, bottom: "-8%", height: "100%" }}
       >
         <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 480" preserveAspectRatio="none">
-          <path d={frontHillPath} fill={colors.front} filter="url(#ridgeRoughStrong)" />
+          <path d={frontHillPath} fill={colors.front} />
         </svg>
       </motion.div>
     </>
@@ -500,7 +487,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
 
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 55; i++) {
       items.push({
         id: i,
         x: Math.random() * 100,
@@ -688,14 +675,35 @@ export default function Landing() {
   const my = useSpring(rawY, { stiffness: 60, damping: 18, mass: 0.6 });
 
   useEffect(() => {
+    // Skip parallax on touch / coarse-pointer devices — there's no mouse to
+    // drive it and we save a lot of layout/composite work.
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+    let pendingX = 0;
+    let pendingY = 0;
+    let rafId = 0;
+    let queued = false;
+    const flush = () => {
+      queued = false;
+      rawX.set(pendingX);
+      rawY.set(pendingY);
+    };
     const onMove = (e: MouseEvent) => {
       const w = window.innerWidth || 1;
       const h = window.innerHeight || 1;
-      rawX.set((e.clientX / w) * 2 - 1);
-      rawY.set((e.clientY / h) * 2 - 1);
+      pendingX = (e.clientX / w) * 2 - 1;
+      pendingY = (e.clientY / h) * 2 - 1;
+      if (!queued) {
+        queued = true;
+        rafId = window.requestAnimationFrame(flush);
+      }
     };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
   }, [rawX, rawY]);
 
   return (
