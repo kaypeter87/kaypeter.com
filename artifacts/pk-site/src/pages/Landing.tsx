@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState } from "react";
 import { Link } from "wouter";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/hooks/use-theme";
 
@@ -197,7 +197,11 @@ function Birds() {
   );
 }
 
-function NightSky() {
+function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
+  const starsX = useTransform(mx, (v) => v * 18);
+  const starsY = useTransform(my, (v) => v * 18);
+  const moonX = useTransform(mx, (v) => v * 38);
+  const moonY = useTransform(my, (v) => v * 38);
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
     for (let i = 0; i < 100; i++) {
@@ -219,7 +223,7 @@ function NightSky() {
 
   return (
     <>
-      <div className="absolute inset-0 z-0">
+      <motion.div className="absolute inset-0 z-0" style={{ x: starsX, y: starsY }}>
         {stars.map((star) => (
           <motion.div
             key={star.id}
@@ -252,14 +256,21 @@ function NightSky() {
             }
           />
         ))}
-      </div>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute left-1/2 top-1/2 z-[5] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{ width: "min(38vw, 38vh)", height: "min(38vw, 38vh)" }}
+        className="absolute left-1/2 top-1/2 z-[5] pointer-events-none"
+        style={{
+          width: "min(38vw, 38vh)",
+          height: "min(38vw, 38vh)",
+          x: moonX,
+          y: moonY,
+          translateX: "-50%",
+          translateY: "-50%",
+        }}
       >
         <div
           className="absolute inset-0 rounded-full"
@@ -302,7 +313,11 @@ function NightSky() {
   );
 }
 
-function DaySky() {
+function DaySky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
+  const sunX = useTransform(mx, (v) => v * 38);
+  const sunY = useTransform(my, (v) => v * 38);
+  const cloudsX = useTransform(mx, (v) => v * 14);
+  const cloudsY = useTransform(my, (v) => v * 14);
   const clouds = useMemo<Cloud[]>(() => {
     const items: Cloud[] = [];
     for (let i = 0; i < 7; i++) {
@@ -342,8 +357,15 @@ function DaySky() {
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute left-1/2 top-1/2 z-[3] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{ width: "min(36vw, 36vh)", height: "min(36vw, 36vh)" }}
+        className="absolute left-1/2 top-1/2 z-[3] pointer-events-none"
+        style={{
+          width: "min(36vw, 36vh)",
+          height: "min(36vw, 36vh)",
+          x: sunX,
+          y: sunY,
+          translateX: "-50%",
+          translateY: "-50%",
+        }}
       >
         <motion.div
           className="absolute inset-[-30%] rounded-full"
@@ -365,7 +387,10 @@ function DaySky() {
         />
       </motion.div>
 
-      <div className="absolute inset-0 z-[4] overflow-hidden pointer-events-none">
+      <motion.div
+        className="absolute inset-0 z-[4] overflow-hidden pointer-events-none"
+        style={{ x: cloudsX, y: cloudsY }}
+      >
         {clouds.map((cloud) => {
           const width = Math.max(...cloud.puffs.map((p) => p.dx + p.r * 2));
           return (
@@ -408,7 +433,7 @@ function DaySky() {
             </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       <Birds />
     </>
@@ -422,13 +447,30 @@ export default function Landing() {
 
   const isDark = theme === "dark";
 
+  // Mouse parallax: normalized -1..1 across the viewport, smoothed with a spring.
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const mx = useSpring(rawX, { stiffness: 60, damping: 18, mass: 0.6 });
+  const my = useSpring(rawY, { stiffness: 60, damping: 18, mass: 0.6 });
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      rawX.set((e.clientX / w) * 2 - 1);
+      rawY.set((e.clientY / h) * 2 - 1);
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [rawX, rawY]);
+
   return (
     <div className="relative w-full min-h-[100dvh] overflow-hidden bg-background text-foreground font-serif selection:bg-primary selection:text-primary-foreground">
       <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20">
         <ThemeToggle />
       </div>
 
-      {mounted && (isDark ? <NightSky /> : <DaySky />)}
+      {mounted && (isDark ? <NightSky mx={mx} my={my} /> : <DaySky mx={mx} my={my} />)}
 
       <div className="absolute inset-0 z-10 flex flex-col justify-between p-8 md:p-16 pointer-events-none">
         <div className="flex justify-between items-start w-full">
