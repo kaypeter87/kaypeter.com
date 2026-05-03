@@ -190,10 +190,11 @@ function NightSky() {
         y: Math.random() * 100,
         size: Math.random() * 2 + 1,
         opacity: Math.random() * 0.7 + 0.2,
-        duration: Math.random() * 13 + 12,
-        xMove: (Math.random() - 0.5) * 15,
-        yMove: (Math.random() - 0.5) * 15,
-        twinkleDuration: Math.random() > 0.7 ? Math.random() * 3 + 2 : null,
+        duration: 0,
+        xMove: 0,
+        yMove: 0,
+        // ~55% of stars sparkle on a random cadence; the rest sit perfectly still.
+        twinkleDuration: Math.random() > 0.45 ? Math.random() * 4 + 2 : null,
       });
     }
     return items;
@@ -213,26 +214,25 @@ function NightSky() {
               top: `${star.y}%`,
               opacity: star.opacity,
             }}
-            animate={{
-              x: [0, `${star.xMove}vw`, 0],
-              y: [0, `${star.yMove}vh`, 0],
-              ...(star.twinkleDuration
-                ? { opacity: [star.opacity, star.opacity * 0.2, star.opacity] }
-                : {}),
-            }}
-            transition={{
-              x: { duration: star.duration, repeat: Infinity, ease: "linear" },
-              y: { duration: star.duration * 1.1, repeat: Infinity, ease: "linear" },
-              ...(star.twinkleDuration
+            animate={
+              star.twinkleDuration
                 ? {
-                    opacity: {
-                      duration: star.twinkleDuration,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    },
+                    opacity: [star.opacity, Math.min(1, star.opacity + 0.6), star.opacity * 0.25, star.opacity],
+                    scale: [1, 1.6, 1, 1],
                   }
-                : {}),
-            }}
+                : undefined
+            }
+            transition={
+              star.twinkleDuration
+                ? {
+                    duration: star.twinkleDuration,
+                    repeat: Infinity,
+                    repeatDelay: Math.random() * 6 + 2,
+                    ease: "easeInOut",
+                    times: [0, 0.4, 0.7, 1],
+                  }
+                : undefined
+            }
           />
         ))}
       </div>
