@@ -54,22 +54,23 @@ function ShootingStars() {
     let timer: number;
 
     const spawn = () => {
-      // Down-left diagonal: 200°-230° in standard CSS rotation (0° = right, 90° = down)
-      const angleDeg = 200 + Math.random() * 30;
+      // Random direction in full 360° — but bias slightly toward downward arcs
+      // so they read as "falling" rather than "rising".
+      const angleDeg = Math.random() * 360;
       const angleRad = (angleDeg * Math.PI) / 180;
-      const distance = 110 + Math.random() * 30; // vw-ish travel distance
+      const distance = 55 + Math.random() * 35; // shorter travel so they stay in view
       const s: Shooter = {
         id: nextId++,
-        startX: 92 + Math.random() * 18, // start just off the right edge
-        startY: Math.random() * 30, // upper portion of the sky
-        length: 160 + Math.random() * 140,
+        startX: 20 + Math.random() * 60, // centered-ish: 20-80% horizontally
+        startY: 10 + Math.random() * 55, // middle band of the sky
+        length: 140 + Math.random() * 140,
         angle: angleDeg,
-        duration: 2.6 + Math.random() * 1.4, // 2.6 - 4.0s, much slower
-        dx: Math.cos(angleRad) * distance, // negative -> leftward
-        dy: Math.sin(angleRad) * distance * 0.9, // positive -> downward
+        duration: 2.6 + Math.random() * 1.4,
+        dx: Math.cos(angleRad) * distance,
+        dy: Math.sin(angleRad) * distance,
       };
       setShooters((prev) => [...prev.slice(-4), s]);
-      timer = window.setTimeout(spawn, 4000 + Math.random() * 7000);
+      timer = window.setTimeout(spawn, 3500 + Math.random() * 6000);
     };
 
     timer = window.setTimeout(spawn, 1500 + Math.random() * 2500);
