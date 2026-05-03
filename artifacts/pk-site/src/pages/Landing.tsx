@@ -70,7 +70,7 @@ function ShootingStars() {
         dy: Math.sin(angleRad) * distance,
       };
       setShooters((prev) => [...prev.slice(-7), s]);
-      timer = window.setTimeout(spawn, 1400 + Math.random() * 2200);
+      timer = window.setTimeout(spawn, 6000 + Math.random() * 7000);
     };
 
     timer = window.setTimeout(spawn, 800 + Math.random() * 1500);
