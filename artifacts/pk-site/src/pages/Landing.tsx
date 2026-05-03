@@ -394,8 +394,9 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
     return d;
   }, [frontHillKeys]);
 
-  // Procedurally scatter a forest across the upper portion of the foreground
-  // hill — denser on the apex/ledge, thinning out as the slope drops away.
+  // Procedurally scatter a DENSE forest across the foreground hill. Trees are
+  // packed tightly so their silhouettes overlap and merge into a continuous
+  // tree-line mass (rather than reading as individual sparse trees).
   // Each tree's y is computed from the actual hill surface so they always sit
   // exactly on the silhouette regardless of viewport size.
   const trees = useMemo(() => {
@@ -408,43 +409,51 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
       tree: ReturnType<typeof generatePineTree>;
     }[] = [];
 
-    // 1) Dense forest band across the upper hill (apex → past the ledge)
-    //    Walk x in small jittered steps so trees overlap & cluster organically.
-    let x = -40;
-    let i = 0;
-    while (x < 320) {
-      const jitter = (rand() - 0.5) * 6;
-      const px = x + jitter;
-      // Tree height scales with how high on the hill it sits — taller near the
-      // apex/ledge, shorter as the slope drops.
-      const heightFactor = Math.max(0.35, 1 - (px + 40) / 420);
-      const h = (60 + rand() * 90) * heightFactor;
+    let nextSeed = 1009;
+    const push = (x: number, h: number) => {
       items.push({
-        seed: 1009 + i * 7,
-        x: px,
+        seed: nextSeed,
+        x,
         h,
-        surfaceY: frontHillSurfaceY(px),
-        tree: generatePineTree(1009 + i * 7),
+        surfaceY: frontHillSurfaceY(x),
+        tree: generatePineTree(nextSeed),
       });
-      x += 4 + rand() * 7;
-      i++;
+      nextSeed += 7;
+    };
+
+    // 1) BACK ROW — taller trees forming the silhouette's top edge. Densely
+    //    packed so canopies overlap heavily.
+    for (let x = -50; x < 340; x += 2.2 + rand() * 1.8) {
+      const heightFactor = Math.max(0.55, 1 - (x + 50) / 480);
+      const h = (110 + rand() * 70) * heightFactor;
+      push(x + (rand() - 0.5) * 3, h);
     }
 
-    // 2) Sparser scatter further down the slope for depth
-    for (let k = 0; k < 14; k++) {
-      const px = 320 + rand() * 200;
-      const h = 22 + rand() * 28;
-      items.push({
-        seed: 4001 + k,
-        x: px,
-        h,
-        surfaceY: frontHillSurfaceY(px),
-        tree: generatePineTree(4001 + k),
-      });
+    // 2) MID ROW — slightly shorter trees offset to fill gaps between back-row
+    //    trees, adding visual mass to the silhouette.
+    for (let x = -40; x < 330; x += 2.5 + rand() * 1.8) {
+      const heightFactor = Math.max(0.5, 1 - (x + 40) / 460);
+      const h = (75 + rand() * 55) * heightFactor;
+      push(x + (rand() - 0.5) * 4, h);
+    }
+
+    // 3) FRONT ROW — small understory trees nestled at ground level along the
+    //    crest, giving the canopy a textured, busy base.
+    for (let x = -30; x < 320; x += 3 + rand() * 2) {
+      const heightFactor = Math.max(0.45, 1 - (x + 30) / 440);
+      const h = (45 + rand() * 35) * heightFactor;
+      push(x + (rand() - 0.5) * 5, h);
+    }
+
+    // 4) Trailing scatter further down the slope for depth
+    for (let x = 340; x < 560; x += 4 + rand() * 5) {
+      const h = 20 + rand() * 35;
+      push(x + (rand() - 0.5) * 4, h);
     }
 
     // Sort by surfaceY ascending so trees higher on the hill render BEHIND
-    // trees lower down — gives a layered, depth-rich forest silhouette.
+    // trees lower down — gives a layered, depth-rich forest silhouette where
+    // overlapping crowns naturally merge into a single dark mass.
     items.sort((a, b) => a.surfaceY - b.surfaceY);
     return items;
   }, [frontHillSurfaceY]);
@@ -878,7 +887,7 @@ export default function Landing() {
 
       {mounted && (isDark ? <NightSky mx={mx} my={my} /> : <DaySky mx={mx} my={my} />)}
 
-      <div className="absolute inset-0 z-10 flex flex-col justify-between p-8 md:p-16 pointer-events-none">
+      <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-16 pointer-events-none">
         <div className="flex justify-between items-start w-full">
           <div />
           <motion.div
