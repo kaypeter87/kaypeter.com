@@ -603,7 +603,7 @@ function NightSky({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number>
           viewBox="0 0 1440 480"
           preserveAspectRatio="none"
         >
-          <path d={rightHillPath} fill="#0d1321" opacity="0.96" filter="url(#ridgeRoughStrong)" />
+          <path d={rightHillPath} fill="#0d1321" filter="url(#ridgeRoughStrong)" />
         </svg>
       </motion.div>
 
