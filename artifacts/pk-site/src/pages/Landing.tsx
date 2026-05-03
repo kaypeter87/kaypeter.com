@@ -332,15 +332,23 @@ function generateCloudPuffs(seed: number): {
 }
 
 function CloudShape({ cloud }: { cloud: Cloud }) {
+  const filterId = `cloud-blur-${cloud.id}`;
+  // Pad the SVG so the blur isn't clipped at the edges.
+  const pad = Math.ceil(cloud.blur * 4 + 6);
   return (
     <svg
-      width={cloud.width}
-      height={cloud.height}
-      viewBox={`0 0 ${cloud.width} ${cloud.height}`}
+      width={cloud.width + pad * 2}
+      height={cloud.height + pad * 2}
+      viewBox={`${-pad} ${-pad} ${cloud.width + pad * 2} ${cloud.height + pad * 2}`}
       fill="none"
-      style={{ display: "block", overflow: "visible" }}
+      style={{ display: "block" }}
     >
-      <g fill="white">
+      <defs>
+        <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation={cloud.blur} />
+        </filter>
+      </defs>
+      <g fill="white" filter={`url(#${filterId})`}>
         {cloud.puffs.map((p, i) => (
           <circle key={i} cx={p.cx} cy={p.cy} r={p.r} />
         ))}
@@ -382,7 +390,7 @@ function Clouds() {
             transform: `scale(${c.scale})`,
             transformOrigin: "left center",
             opacity: c.opacity,
-            filter: `blur(${c.blur}px)`,
+            willChange: "transform",
           }}
           initial={{ x: "-20vw" }}
           animate={{ x: "125vw" }}
