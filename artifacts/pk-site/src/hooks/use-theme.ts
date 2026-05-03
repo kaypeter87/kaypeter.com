@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 
 type Theme = "dark" | "light";
 const STORAGE_KEY = "pk-theme";
@@ -10,18 +10,53 @@ function getInitialTheme(): Theme {
   return "dark";
 }
 
-export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+let currentTheme: Theme = getInitialTheme();
+const listeners = new Set<() => void>();
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
+function applyTheme(theme: Theme) {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  window.localStorage.setItem(STORAGE_KEY, theme);
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+function getSnapshot(): Theme {
+  return currentTheme;
+}
+
+function getServerSnapshot(): Theme {
+  return "dark";
+}
+
+function setTheme(next: Theme) {
+  if (next === currentTheme) return;
+  currentTheme = next;
+  applyTheme(next);
+  listeners.forEach((cb) => cb());
+}
+
+if (typeof document !== "undefined") {
+  applyTheme(currentTheme);
+}
+
+export function useTheme() {
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
+    setTheme(currentTheme === "dark" ? "light" : "dark");
   }, []);
 
-  return { theme, toggleTheme };
+  // Keep this for any callers still doing direct updates via useState elsewhere.
+  const [, force] = useState(0);
+  useEffect(() => {
+    return subscribe(() => force((n) => n + 1));
+  }, []);
+
+  return { theme, toggleTheme, setTheme };
 }
