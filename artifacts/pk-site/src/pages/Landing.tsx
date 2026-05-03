@@ -618,23 +618,35 @@ function NightSky({
 }) {
   const starsX = useTransform(mx, (v) => v * 18);
   const starsY = useTransform(my, (v) => v * 18);
-  const moonX = useTransform(mx, (v) => v * 30);
-  const moonY = useTransform(my, (v) => v * 30);
 
-  // Theme-driven Y offset: moon "rises" into view (0) when dark, "sets" below
-  // the horizon (large positive value) when transitioning to light.
-  const moonSetOffset = useMotionValue(isDark ? 0 : 1);
+  // Theme-driven arc: -1 = pre-rise (upper-left, off-screen), 0 = at rest,
+  // +1 = post-set (lower-right, off-screen). Initial value is -1 when dark
+  // so the moon rises into view on first mount, or +1 when light so it sits
+  // hidden in the set position.
+  const moonPhase = useMotionValue(isDark ? -1 : 1);
   useEffect(() => {
-    const target = isDark ? 0 : 1;
-    const controls = animate(moonSetOffset, target, {
+    if (isDark) {
+      // Snap to pre-rise (invisible behind opacity 0 wrapper) and arc up.
+      moonPhase.set(-1);
+      const controls = animate(moonPhase, 0, {
+        duration: 1.8,
+        ease: [0.16, 1, 0.3, 1],
+      });
+      return () => controls.stop();
+    }
+    const controls = animate(moonPhase, 1, {
       duration: 1.8,
       ease: [0.4, 0, 0.6, 1],
     });
     return () => controls.stop();
-  }, [isDark, moonSetOffset]);
-  const moonFinalY = useTransform([moonY, moonSetOffset], ([py, off]) => {
+  }, [isDark, moonPhase]);
+  const moonOffX = useTransform([mx, moonPhase], ([m, p]) => {
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+    return (m as number) * 30 + (p as number) * vw * 0.45;
+  });
+  const moonOffY = useTransform([my, moonPhase], ([m, p]) => {
     const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-    return (py as number) + (off as number) * vh * 0.95;
+    return (m as number) * 30 + (p as number) * vh * 0.75;
   });
 
   const stars = useMemo<Star[]>(() => {
@@ -708,8 +720,8 @@ function NightSky({
           height: "min(10vw, 13vh)",
           left: "26%",
           top: "20%",
-          x: moonX,
-          y: moonFinalY,
+          x: moonOffX,
+          y: moonOffY,
           translateX: "-50%",
           translateY: "-50%",
         }}
@@ -766,23 +778,32 @@ function DaySky({
   my: MotionValue<number>;
   isDark: boolean;
 }) {
-  const sunX = useTransform(mx, (v) => v * 30);
-  const sunY = useTransform(my, (v) => v * 30);
-
-  // Theme-driven Y offset: sun is at rest (0) when light; "sets" below the
-  // horizon when transitioning to dark.
-  const sunSetOffset = useMotionValue(isDark ? 1 : 0);
+  // See NightSky moonPhase for the same arc convention. Sun rises from the
+  // upper-left when entering light mode and sets toward the lower-right when
+  // dark mode is engaged.
+  const sunPhase = useMotionValue(isDark ? 1 : -1);
   useEffect(() => {
-    const target = isDark ? 1 : 0;
-    const controls = animate(sunSetOffset, target, {
+    if (!isDark) {
+      sunPhase.set(-1);
+      const controls = animate(sunPhase, 0, {
+        duration: 1.8,
+        ease: [0.16, 1, 0.3, 1],
+      });
+      return () => controls.stop();
+    }
+    const controls = animate(sunPhase, 1, {
       duration: 1.8,
       ease: [0.4, 0, 0.6, 1],
     });
     return () => controls.stop();
-  }, [isDark, sunSetOffset]);
-  const sunFinalY = useTransform([sunY, sunSetOffset], ([py, off]) => {
+  }, [isDark, sunPhase]);
+  const sunOffX = useTransform([mx, sunPhase], ([m, p]) => {
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+    return (m as number) * 30 + (p as number) * vw * 0.45;
+  });
+  const sunOffY = useTransform([my, sunPhase], ([m, p]) => {
     const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-    return (py as number) + (off as number) * vh * 0.95;
+    return (m as number) * 30 + (p as number) * vh * 0.75;
   });
 
   return (
@@ -812,8 +833,8 @@ function DaySky({
           height: "min(10vw, 13vh)",
           left: "26%",
           top: "20%",
-          x: sunX,
-          y: sunFinalY,
+          x: sunOffX,
+          y: sunOffY,
           translateX: "-50%",
           translateY: "-50%",
         }}
