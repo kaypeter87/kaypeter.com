@@ -101,6 +101,7 @@ type Star = {
   xMove: number;
   yMove: number;
   twinkleDuration: number | null;
+  isAnchor?: boolean;
 };
 
 type Shooter = {
@@ -448,10 +449,12 @@ function Mountains({
   mx,
   my,
   colors,
+  atmospheric = false,
 }: {
   mx: MotionValue<number>;
   my: MotionValue<number>;
   colors: MountainPalette;
+  atmospheric?: boolean;
 }) {
   const farHillX = useTransform(mx, (v) => v * 14);
   const farHillY = useTransform(my, (v) => v * 8);
@@ -532,6 +535,16 @@ function Mountains({
 
   return (
     <>
+      {/* Horizon glow — sits behind the farthest ridge, only when atmospheric */}
+      {atmospheric && (
+        <motion.div
+          className="absolute inset-x-0 z-[5] pointer-events-none"
+          style={{ x: farHillX, y: farHillY, bottom: "25%", height: "30%" }}
+        >
+          <div className="absolute inset-x-0 bottom-0 top-0 bg-gradient-to-t from-[#2a3548]/40 to-transparent blur-2xl" />
+        </motion.div>
+      )}
+
       <motion.div
         className="absolute inset-x-0 z-[6] pointer-events-none"
         style={{ x: farHillX, y: farHillY, bottom: "-8%", height: "92%" }}
@@ -540,6 +553,10 @@ function Mountains({
           <path d={ridges.farthest} fill={colors.farthest} />
         </svg>
       </motion.div>
+
+      {atmospheric && (
+        <motion.div className="absolute inset-x-0 z-[7] pointer-events-none bg-gradient-to-t from-[#283b50]/20 to-transparent blur-xl" style={{ x: farHillX, y: farHillY, bottom: "0%", height: "20%" }} />
+      )}
 
       <motion.div
         className="absolute inset-x-0 z-[7] pointer-events-none"
@@ -550,6 +567,10 @@ function Mountains({
         </svg>
       </motion.div>
 
+      {atmospheric && (
+        <motion.div className="absolute inset-x-0 z-[8] pointer-events-none bg-gradient-to-t from-[#1b2940]/30 to-transparent blur-xl" style={{ x: midHillX, y: midHillY, bottom: "0%", height: "15%" }} />
+      )}
+
       <motion.div
         className="absolute inset-x-0 z-[8] pointer-events-none"
         style={{ x: midHillX, y: midHillY, bottom: "-8%", height: "82%" }}
@@ -558,6 +579,10 @@ function Mountains({
           <path d={ridges.mid} fill={colors.mid} />
         </svg>
       </motion.div>
+
+      {atmospheric && (
+        <motion.div className="absolute inset-x-0 z-[9] pointer-events-none bg-gradient-to-t from-[#101626]/40 to-transparent blur-xl" style={{ x: midHillX, y: midHillY, bottom: "0%", height: "15%" }} />
+      )}
 
       <motion.div
         className="absolute inset-x-0 z-[9] pointer-events-none"
@@ -651,18 +676,30 @@ function NightSky({
 
   const stars = useMemo<Star[]>(() => {
     const items: Star[] = [];
-    for (let i = 0; i < 55; i++) {
+    const rand = mulberry32(888);
+    for (let i = 0; i < 90; i++) {
+      // Slight clustering around a faint diagonal "milky way" band so the
+      // field reads as a sky instead of perfectly uniform noise.
+      let x = rand() * 100;
+      let y = rand() * 100;
+      if (rand() > 0.6) {
+        const t = rand();
+        x = t * 100 + (rand() - 0.5) * 15;
+        y = t * 100 + (rand() - 0.5) * 15;
+      }
+      const isAnchor = rand() > 0.95;
       items.push({
         id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.7 + 0.2,
+        x,
+        y,
+        size: isAnchor ? 2.5 + rand() * 1.5 : rand() * 2 + 1,
+        opacity: isAnchor ? 0.8 + rand() * 0.2 : rand() * 0.5 + 0.1,
         duration: 0,
         xMove: 0,
         yMove: 0,
         // ~55% of stars sparkle on a random cadence; the rest sit perfectly still.
-        twinkleDuration: Math.random() > 0.45 ? Math.random() * 4 + 2 : null,
+        twinkleDuration: rand() > 0.45 ? rand() * 4 + 2 : null,
+        isAnchor,
       });
     }
     return items;
@@ -675,17 +712,24 @@ function NightSky({
       animate={{ opacity: isDark ? 1 : 0 }}
       transition={{ duration: 1.8, ease: "easeInOut" }}
     >
-      <motion.div className="absolute inset-0 z-0" style={{ x: starsX, y: starsY }}>
+      {/* Deep sky gradient — adds vertical atmospheric depth */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#0a1122] via-[#0d162a] to-[#1d2d44]" />
+
+      {/* Faint diagonal milky-way band */}
+      <div className="absolute inset-0 z-0 opacity-10 bg-gradient-to-br from-transparent via-[#748cab] to-transparent blur-3xl transform rotate-45 scale-150" />
+
+      <motion.div className="absolute inset-0 z-[1]" style={{ x: starsX, y: starsY }}>
         {stars.map((star) => (
           <motion.div
             key={star.id}
-            className="absolute rounded-full bg-foreground"
+            className={`absolute rounded-full ${star.isAnchor ? "bg-white" : "bg-foreground"}`}
             style={{
               width: `${star.size}px`,
               height: `${star.size}px`,
               left: `${star.x}%`,
               top: `${star.y}%`,
               opacity: star.opacity,
+              boxShadow: star.isAnchor ? "0 0 6px 1px rgba(255,255,255,0.4)" : "none",
             }}
             animate={
               star.twinkleDuration
@@ -726,45 +770,54 @@ function NightSky({
           translateY: "-50%",
         }}
       >
+        {/* Chromatic edge / outer halo */}
+        <div
+          className="absolute inset-[-20%] rounded-full opacity-40 blur-md"
+          style={{
+            background:
+              "radial-gradient(circle at 45% 45%, #ffffff 0%, #b8c5d6 45%, #748cab 80%, transparent 100%)",
+          }}
+        />
+        {/* Soft luminance bloom + body */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 38% 38%, #f5f0d8 0%, #d8d2bc 45%, #8a8472 80%, #4a4538 100%)",
+              "radial-gradient(circle at 35% 35%, #ffffff 0%, #f0ebd8 35%, #d8d2bc 65%, #6a6452 95%, #2a2518 100%)",
             boxShadow:
-              "0 0 80px 20px rgba(240,235,216,0.18), 0 0 200px 60px rgba(240,235,216,0.10)",
+              "0 0 100px 30px rgba(240,235,216,0.15), 0 0 250px 80px rgba(116,140,171,0.08)",
           }}
         />
+        {/* Crater shadow gradient */}
         <div
-          className="absolute inset-0 rounded-full mix-blend-overlay opacity-50"
+          className="absolute inset-0 rounded-full mix-blend-multiply opacity-60"
           style={{
             background:
-              "radial-gradient(circle at 70% 70%, transparent 55%, rgba(0,0,0,0.55) 100%)",
+              "radial-gradient(circle at 75% 75%, transparent 40%, rgba(0,0,0,0.65) 100%)",
           }}
         />
-        <motion.div
+        {/* Individual craters */}
+        <div
           className="absolute rounded-full"
-          style={{ width: "12%", height: "12%", left: "22%", top: "30%", background: "rgba(0,0,0,0.20)" }}
-          animate={{ opacity: [0.6, 0.4, 0.6] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          style={{ width: "15%", height: "15%", left: "18%", top: "35%", background: "rgba(0,0,0,0.15)", filter: "blur(2px)" }}
         />
-        <motion.div
+        <div
           className="absolute rounded-full"
-          style={{ width: "7%", height: "7%", left: "55%", top: "55%", background: "rgba(0,0,0,0.24)" }}
-          animate={{ opacity: [0.5, 0.3, 0.5] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          style={{ width: "9%", height: "9%", left: "45%", top: "65%", background: "rgba(0,0,0,0.22)", filter: "blur(1px)" }}
         />
-        <motion.div
+        <div
           className="absolute rounded-full"
-          style={{ width: "5%", height: "5%", left: "70%", top: "30%", background: "rgba(0,0,0,0.20)" }}
-          animate={{ opacity: [0.4, 0.25, 0.4] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          style={{ width: "18%", height: "12%", left: "60%", top: "40%", background: "rgba(0,0,0,0.18)", filter: "blur(2px)", transform: "rotate(-20deg)" }}
+        />
+        <div
+          className="absolute rounded-full"
+          style={{ width: "7%", height: "7%", left: "30%", top: "60%", background: "rgba(0,0,0,0.12)", filter: "blur(1px)" }}
         />
       </motion.div>
 
       <ShootingStars />
 
-      <Mountains mx={mx} my={my} colors={NIGHT_PALETTE} />
+      <Mountains mx={mx} my={my} colors={NIGHT_PALETTE} atmospheric />
     </motion.div>
   );
 }
