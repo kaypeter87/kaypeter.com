@@ -46,6 +46,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "chokidar": "^4.0.3",
+    "simplex-noise": "^4.0.3",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "^1.1.1",
