@@ -454,8 +454,14 @@ function Mountains({
   mx: MotionValue<number>;
   my: MotionValue<number>;
   colors: MountainPalette;
-  atmospheric?: boolean;
+  atmospheric?: false | "night" | "day";
 }) {
+  // Mist tone & opacities differ between night (cool dark haze) and day
+  // (warm horizon haze). When atmospheric is false, no mist renders.
+  const mist = atmospheric === "day"
+    ? { c1: "#f6ead8", o1: 60, c2: "#f6ead8", o2: 50, c3: "#f6ead8", o3: 30, c4: "#e9c46a", o4: 15 }
+    : { c1: "#2a3548", o1: 40, c2: "#283b50", o2: 20, c3: "#1b2940", o3: 30, c4: "#101626", o4: 40 };
+  const dayFrontTint = atmospheric === "day";
   const farHillX = useTransform(mx, (v) => v * 14);
   const farHillY = useTransform(my, (v) => v * 8);
   const midHillX = useTransform(mx, (v) => v * 26);
@@ -541,7 +547,10 @@ function Mountains({
           className="absolute inset-x-0 z-[5] pointer-events-none"
           style={{ x: farHillX, y: farHillY, bottom: "25%", height: "30%" }}
         >
-          <div className="absolute inset-x-0 bottom-0 top-0 bg-gradient-to-t from-[#2a3548]/40 to-transparent blur-2xl" />
+          <div
+            className="absolute inset-x-0 bottom-0 top-0 blur-2xl"
+            style={{ background: `linear-gradient(to top, ${mist.c1}${Math.round(mist.o1 * 2.55).toString(16).padStart(2, "0")}, transparent)` }}
+          />
         </motion.div>
       )}
 
@@ -555,7 +564,16 @@ function Mountains({
       </motion.div>
 
       {atmospheric && (
-        <motion.div className="absolute inset-x-0 z-[7] pointer-events-none bg-gradient-to-t from-[#283b50]/20 to-transparent blur-xl" style={{ x: farHillX, y: farHillY, bottom: "0%", height: "20%" }} />
+        <motion.div
+          className="absolute inset-x-0 z-[7] pointer-events-none blur-xl"
+          style={{
+            x: farHillX,
+            y: farHillY,
+            bottom: "0%",
+            height: "20%",
+            background: `linear-gradient(to top, ${mist.c2}${Math.round(mist.o2 * 2.55).toString(16).padStart(2, "0")}, transparent)`,
+          }}
+        />
       )}
 
       <motion.div
@@ -568,7 +586,16 @@ function Mountains({
       </motion.div>
 
       {atmospheric && (
-        <motion.div className="absolute inset-x-0 z-[8] pointer-events-none bg-gradient-to-t from-[#1b2940]/30 to-transparent blur-xl" style={{ x: midHillX, y: midHillY, bottom: "0%", height: "15%" }} />
+        <motion.div
+          className="absolute inset-x-0 z-[8] pointer-events-none blur-xl"
+          style={{
+            x: midHillX,
+            y: midHillY,
+            bottom: "0%",
+            height: "15%",
+            background: `linear-gradient(to top, ${mist.c3}${Math.round(mist.o3 * 2.55).toString(16).padStart(2, "0")}, transparent)`,
+          }}
+        />
       )}
 
       <motion.div
@@ -581,7 +608,16 @@ function Mountains({
       </motion.div>
 
       {atmospheric && (
-        <motion.div className="absolute inset-x-0 z-[9] pointer-events-none bg-gradient-to-t from-[#101626]/40 to-transparent blur-xl" style={{ x: midHillX, y: midHillY, bottom: "0%", height: "15%" }} />
+        <motion.div
+          className="absolute inset-x-0 z-[9] pointer-events-none blur-xl"
+          style={{
+            x: midHillX,
+            y: midHillY,
+            bottom: "0%",
+            height: "15%",
+            background: `linear-gradient(to top, ${mist.c4}${Math.round(mist.o4 * 2.55).toString(16).padStart(2, "0")}, transparent)`,
+          }}
+        />
       )}
 
       <motion.div
@@ -607,7 +643,20 @@ function Mountains({
         style={{ x: frontHillX, y: frontHillY, bottom: "-8%", height: "100%" }}
       >
         <svg className="absolute" style={{ left: "-15%", bottom: 0, width: "130%", height: "100%" }} viewBox="0 0 1440 480" preserveAspectRatio="none">
-          <path d={frontHillPath} fill={colors.front} />
+          {dayFrontTint ? (
+            <>
+              <defs>
+                <linearGradient id="frontMountainTint" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#e9c46a" stopOpacity="0.18" />
+                  <stop offset="35%" stopColor={colors.front} stopOpacity="1" />
+                  <stop offset="100%" stopColor={colors.front} stopOpacity="1" />
+                </linearGradient>
+              </defs>
+              <path d={frontHillPath} fill="url(#frontMountainTint)" />
+            </>
+          ) : (
+            <path d={frontHillPath} fill={colors.front} />
+          )}
         </svg>
       </motion.div>
     </>
@@ -817,7 +866,7 @@ function NightSky({
 
       <ShootingStars />
 
-      <Mountains mx={mx} my={my} colors={NIGHT_PALETTE} atmospheric />
+      <Mountains mx={mx} my={my} colors={NIGHT_PALETTE} atmospheric="night" />
     </motion.div>
   );
 }
@@ -866,12 +915,21 @@ function DaySky({
       animate={{ opacity: isDark ? 0 : 1 }}
       transition={{ duration: 1.8, ease: "easeInOut" }}
     >
-      {/* Cool blue sky gradient — light at horizon, deepening toward the top */}
+      {/* Atmospheric sky gradient — cool top, warm horizon haze */}
       <div
         className="absolute inset-0 z-0"
         style={{
           background:
-            "linear-gradient(to bottom, #93cfff 0%, #b4e1ff 50%, #d4eeff 100%)",
+            "linear-gradient(to bottom, #8abce0 0%, #add1ed 55%, #f6ead8 100%)",
+        }}
+      />
+
+      {/* Warm directional tint — quiets the upper-left near the sun */}
+      <div
+        className="absolute top-0 left-0 w-1/2 h-1/2 opacity-80 blur-3xl pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom right, rgba(251,238,194,0.40), transparent)",
         }}
       />
 
@@ -892,24 +950,66 @@ function DaySky({
           translateY: "-50%",
         }}
       >
-        {/* Soft outer corona */}
+        {/* Volumetric god-rays */}
         <motion.div
-          className="absolute inset-[-35%] rounded-full"
+          className="absolute inset-[-150%] rounded-full opacity-30 mix-blend-screen"
           style={{
             background:
-              "radial-gradient(circle, rgba(233,196,106,0.50) 0%, rgba(233,196,106,0.20) 40%, transparent 72%)",
+              "conic-gradient(from 0deg at 50% 50%, transparent 0%, #fff9e6 5%, transparent 10%, transparent 45%, #fff9e6 50%, transparent 55%, transparent 100%)",
+            filter: "blur(20px)",
           }}
-          animate={{ opacity: [0.85, 1, 0.85] }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+        />
+        {/* Soft outer corona */}
+        <motion.div
+          className="absolute inset-[-40%] rounded-full opacity-60 blur-2xl mix-blend-screen"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, #ffffff 0%, #fbeec2 40%, #e9c46a 70%, transparent 100%)",
+          }}
+          animate={{ opacity: [0.5, 0.7, 0.5] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
-        {/* Sun disc */}
-        <div
+        {/* Sun disc with gentle breathing glow */}
+        <motion.div
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 40% 40%, #fbeec2 0%, #f1d68a 40%, #e9c46a 75%, #c89a3a 100%)",
+              "radial-gradient(circle at 40% 40%, #ffffff 0%, #fbeec2 22%, #f1d68a 60%, #e9c46a 90%, #c89a3a 100%)",
             boxShadow:
-              "0 0 80px 20px rgba(233,196,106,0.35), 0 0 200px 60px rgba(233,196,106,0.18)",
+              "0 0 80px 20px rgba(251,238,194,0.40), inset 0 0 20px rgba(255,255,255,0.8)",
+          }}
+          animate={{
+            boxShadow: [
+              "0 0 80px 20px rgba(251,238,194,0.40), inset 0 0 20px rgba(255,255,255,0.8)",
+              "0 0 100px 30px rgba(251,238,194,0.50), inset 0 0 30px rgba(255,255,255,1.0)",
+              "0 0 80px 20px rgba(251,238,194,0.40), inset 0 0 20px rgba(255,255,255,0.8)",
+            ],
+          }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Lens flare hints — faint dots along the diagonal away from the sun */}
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: "10%",
+            height: "10%",
+            top: "180%",
+            left: "180%",
+            background: "rgba(251,238,194,0.20)",
+            filter: "blur(2px)",
+          }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none mix-blend-screen"
+          style={{
+            width: "5%",
+            height: "5%",
+            top: "250%",
+            left: "250%",
+            background: "rgba(255,255,255,0.30)",
+            filter: "blur(1px)",
           }}
         />
       </motion.div>
@@ -918,7 +1018,7 @@ function DaySky({
 
       <Birds />
 
-      <Mountains mx={mx} my={my} colors={DAY_PALETTE} />
+      <Mountains mx={mx} my={my} colors={DAY_PALETTE} atmospheric="day" />
     </motion.div>
   );
 }
@@ -970,14 +1070,15 @@ export default function Landing() {
 
   return (
     <div className="relative w-full min-h-[100dvh] overflow-hidden bg-background text-foreground font-serif selection:bg-primary selection:text-primary-foreground">
-      <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20 flex items-center gap-4">
+      <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20 flex items-start gap-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2, delay: 1 }}
-          className="text-xs tracking-[0.3em] uppercase text-muted-foreground font-light"
+          className="flex flex-col items-end text-muted-foreground font-light"
         >
-          EST. 2026
+          <span className="text-xs tracking-[0.3em] uppercase">EST. 2026</span>
+          <span className="mt-1 text-[10px] tracking-[0.3em] uppercase opacity-70">NYC</span>
         </motion.div>
         <ThemeToggle />
       </div>
