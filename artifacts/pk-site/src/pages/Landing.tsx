@@ -338,8 +338,9 @@ function generateCloudPuffs(seed: number): CloudShapeData {
 function CloudShape({ cloud }: { cloud: Cloud }) {
   const { shape } = cloud;
   const filterId = `cloud-blur-${cloud.id}`;
-  // Pad the SVG so the blur isn't clipped at the edges.
-  const pad = Math.ceil(cloud.blur * 4 + 6);
+  const gradId = `cloud-grad-${cloud.id}`;
+  // Pad the SVG so the (now much larger) blur isn't clipped at the edges.
+  const pad = Math.ceil(cloud.blur * 6 + 10);
   return (
     <svg
       width={shape.width + pad * 2}
@@ -349,11 +350,15 @@ function CloudShape({ cloud }: { cloud: Cloud }) {
       style={{ display: "block" }}
     >
       <defs>
-        <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
+        <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
           <feGaussianBlur stdDeviation={cloud.blur} />
         </filter>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity={0.9} />
+          <stop offset="100%" stopColor="#f6ead8" stopOpacity={0.6} />
+        </linearGradient>
       </defs>
-      <g fill="white" filter={`url(#${filterId})`}>
+      <g fill={`url(#${gradId})`} filter={`url(#${filterId})`}>
         <ellipse
           cx={shape.base.cx}
           cy={shape.base.cy}
@@ -371,16 +376,16 @@ function CloudShape({ cloud }: { cloud: Cloud }) {
 function Clouds() {
   const clouds = useMemo<Cloud[]>(() => {
     const items: Cloud[] = [];
-    for (let i = 0; i < 6; i++) {
-      const shape = generateCloudPuffs(i + 1);
+    for (let i = 0; i < 5; i++) {
+      const shape = generateCloudPuffs(i + 42);
       items.push({
         id: i,
-        y: 6 + Math.random() * 30,
-        scale: 0.75 + Math.random() * 0.7,   // 0.75x – 1.45x
-        duration: 180 + Math.random() * 160, // 180s – 340s
+        y: 8 + Math.random() * 25,
+        scale: 0.8 + Math.random() * 0.8,    // 0.8x – 1.6x
+        duration: 220 + Math.random() * 180, // 220s – 400s
         delay: -Math.random() * 300,
-        opacity: 0.75 + Math.random() * 0.2,
-        blur: 0.3 + Math.random() * 0.4,
+        opacity: 0.6 + Math.random() * 0.3,
+        blur: 4 + Math.random() * 6,         // painterly soft-edge clouds
         shape,
       });
     }
@@ -809,8 +814,8 @@ function NightSky({
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(10vw, 13vh)",
-          height: "min(10vw, 13vh)",
+          width: "min(12vw, 15vh)",
+          height: "min(12vw, 15vh)",
           left: "26%",
           top: "20%",
           x: moonOffX,
@@ -940,8 +945,8 @@ function DaySky({
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(10vw, 13vh)",
-          height: "min(10vw, 13vh)",
+          width: "min(20vw, 25vh)",
+          height: "min(20vw, 25vh)",
           left: "26%",
           top: "20%",
           x: sunOffX,
@@ -1070,7 +1075,7 @@ export default function Landing() {
 
   return (
     <div className="relative w-full min-h-[100dvh] overflow-hidden bg-background text-foreground font-serif selection:bg-primary selection:text-primary-foreground">
-      <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20 flex items-start gap-4">
+      <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20 flex items-center gap-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1080,6 +1085,7 @@ export default function Landing() {
           <span className="text-xs tracking-[0.3em] uppercase">EST. 2026</span>
           <span className="mt-1 text-[10px] tracking-[0.3em] uppercase opacity-70">NYC</span>
         </motion.div>
+        <span aria-hidden className="h-8 w-px bg-muted-foreground/30" />
         <ThemeToggle />
       </div>
 
