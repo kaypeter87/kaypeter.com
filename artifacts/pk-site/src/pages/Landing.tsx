@@ -651,12 +651,15 @@ function Mountains({
           {dayFrontTint ? (
             <>
               <defs>
+                {/* Warm sunlight overlay — only the tint fades, not the silhouette. */}
                 <linearGradient id="frontMountainTint" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#e9c46a" stopOpacity="0.18" />
-                  <stop offset="35%" stopColor={colors.front} stopOpacity="1" />
-                  <stop offset="100%" stopColor={colors.front} stopOpacity="1" />
+                  <stop offset="35%" stopColor="#e9c46a" stopOpacity="0" />
+                  <stop offset="100%" stopColor="#e9c46a" stopOpacity="0" />
                 </linearGradient>
               </defs>
+              {/* Solid silhouette first, warm tint painted over it. */}
+              <path d={frontHillPath} fill={colors.front} />
               <path d={frontHillPath} fill="url(#frontMountainTint)" />
             </>
           ) : (
@@ -926,15 +929,6 @@ function DaySky({
         style={{
           background:
             "linear-gradient(to bottom, #8abce0 0%, #add1ed 55%, #f6ead8 100%)",
-        }}
-      />
-
-      {/* Warm directional tint — quiets the upper-left near the sun */}
-      <div
-        className="absolute top-0 left-0 w-1/2 h-1/2 opacity-80 blur-3xl pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom right, rgba(251,238,194,0.40), transparent)",
         }}
       />
 
