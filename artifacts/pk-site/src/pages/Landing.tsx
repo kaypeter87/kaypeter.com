@@ -945,8 +945,8 @@ function DaySky({
         transition={{ duration: 2.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="absolute z-[5] pointer-events-none"
         style={{
-          width: "min(20vw, 25vh)",
-          height: "min(20vw, 25vh)",
+          width: "min(10vw, 13vh)",
+          height: "min(10vw, 13vh)",
           left: "26%",
           top: "20%",
           x: sunOffX,
