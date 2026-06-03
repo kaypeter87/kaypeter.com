@@ -1,36 +1,42 @@
 ---
 name: Vercel monorepo output directory
-description: Why a nested build output fails Vercel with "No Output Directory named public" and the deterministic fix
+description: Why a monorepo sub-app fails Vercel with "No Output Directory" / cp errors and the real fix (Root Directory awareness)
 ---
 
-# Vercel "No Output Directory named public found" for monorepo sub-apps
+# Vercel "No Output Directory" for monorepo sub-apps — paths are relative to Root Directory
 
 ## Symptom
-Vercel build *succeeds* (the build command runs, vite emits files) but the deploy
-fails with: `Error: No Output Directory named "public" found after the Build completed.`
-This happens even when `vercel.json#outputDirectory` points at the correct nested
-path (e.g. `artifacts/<app>/dist/public`).
+Build *succeeds* (vite emits files) but the deploy fails with either:
+- `Error: No Output Directory named "public" found after the Build completed.`, or
+- a post-build `cp: cannot stat '<path>': No such file or directory`.
 
-## Why
-Vercel's dashboard "Build & Development Settings" can override `vercel.json` on a
-**per-field** basis (Override toggle). It's possible for `installCommand` and
-`buildCommand` from `vercel.json` to be honored while `outputDirectory` is
-overridden by the dashboard's default (`public`). So the file looks correct but
-the effective output dir is the generic default. You cannot see or reliably fix
-this from code, and telling the user to change the dashboard is unreliable.
+## Real root cause (confirmed from the build log)
+The Vercel project's **Root Directory** was set to the sub-app folder
+(`artifacts/pk-site`), NOT the repo root. **Every path in `vercel.json`
+(`outputDirectory`, and any cwd-relative shell paths in `buildCommand`) resolves
+relative to that Root Directory, not the repo root.** So a value like
+`artifacts/pk-site/dist/public` becomes `artifacts/pk-site/artifacts/pk-site/dist/public`
+→ not found → Vercel falls back to its default name `public` and reports it missing.
 
-## Deterministic fix (code-only, dashboard-independent)
-Make the output land where Vercel looks by default — repo-root `public/`:
-- `buildCommand`: append `&& rm -rf public && cp -r <app>/dist/public public`
-- `outputDirectory`: `public`
-- Add `/public` to root `.gitignore` (build artifact, regenerated each deploy).
+### How to read the log to confirm Root Directory
+- pnpm install progress lines prefixed with `../..` → cwd is 2 levels below the
+  workspace root, i.e. Vercel is running inside `artifacts/<app>`.
+- The build banner `> @workspace/<app> build /vercel/path0/artifacts/<app>` plus a
+  cwd-relative `cp`/`ls` that can't find `artifacts/<app>/...` confirms cwd = the sub-app.
 
-**Why it's bulletproof:** whether Vercel uses our `outputDirectory: public` OR its
-own default `public`, the files are in the same place. Do NOT change vite's
-`build.outDir` — it stays `dist/public` because the Replit artifact serve config
-depends on it; the copy shim only affects Vercel.
+## Fix (code-only, matches the existing Root Directory)
+Make all `vercel.json` paths relative to the sub-app:
+- `outputDirectory: "dist/public"` (NOT `artifacts/<app>/dist/public`).
+- `buildCommand`: just build; no `cp` shim. `pnpm --filter @workspace/<app> run build`
+  still works from the sub-app cwd because pnpm walks up to the workspace root.
+- `rewrites`/`headers` use URL paths, so they're unaffected by Root Directory.
 
-## Note on this repo's vite config
+**Why not change the dashboard instead:** dashboard changes are unverifiable from
+here and the user had trouble applying them; adapting `vercel.json` to the existing
+Root Directory is deterministic. (Alternative, if Root Directory is empty/repo-root:
+then `outputDirectory` must be the full `artifacts/<app>/dist/public`.)
+
+## Repo-specific
 `artifacts/pk-site/vite.config.ts` THROWS if `PORT` or `BASE_PATH` is unset, so the
-Vercel `buildCommand` inlines `BASE_PATH=/ PORT=5173`. A build that completes is
-proof those env vars were set (i.e. our buildCommand ran).
+Vercel `buildCommand` inlines `BASE_PATH=/ PORT=5173`. vite `build.outDir` is the
+absolute `<config-dir>/dist/public` — do not change it (Replit serve depends on it).
