@@ -10,7 +10,7 @@ Posts live as **MDX files in the repo**. To publish a new post:
 
 1. Drop a file in `artifacts/pk-site/content/posts/`.
 2. Commit and push to your default branch.
-3. Netlify rebuilds in ~30s and the post is live.
+3. Vercel rebuilds in ~30s and the post is live.
 
 That's it. No CMS, no database, no admin UI — your editor is the CMS, git is
 the history, GitHub is the backup.
@@ -21,7 +21,7 @@ the history, GitHub is the backup.
 
 | Option | Verdict | Why |
 | --- | --- | --- |
-| **MDX files in repo** | ✅ Recommended | Free, fast, version-controlled, fits Netlify's static model. Lets you embed React components inside posts when you want them (charts, custom callouts, image galleries). |
+| **MDX files in repo** | ✅ Recommended | Free, fast, version-controlled, fits Vercel's static model. Lets you embed React components inside posts when you want them (charts, custom callouts, image galleries). |
 | Plain Markdown | Fine fallback | Same workflow as MDX but no embedded components. Use this if you never want JSX in a post. |
 | Headless CMS (Sanity, Contentful, Notion) | Skip for now | Worth it only if you'll write often from a phone/tablet or have non-technical collaborators. Overkill for a solo journal. |
 | `api-server` + Postgres | Skip for now | Means hosting an API + DB. Too heavy for a personal blog. Revisit if you ever want comments, drafts with auth, or per-user features. |
@@ -99,7 +99,7 @@ This gives the bundler the full list of posts at build time. The helper then:
    detail page).
 
 No runtime fetching, no API, no environment variables. The whole journal is
-baked into the static bundle at build time, which is why Netlify can serve it
+baked into the static bundle at build time, which is why Vercel can serve it
 for free.
 
 ---
@@ -129,7 +129,7 @@ git commit -m "post: short-slug"
 git push
 ```
 
-Netlify rebuilds on push. The new post appears in the index and at
+Vercel rebuilds on push. The new post appears in the index and at
 `/journal/short-slug` once the build finishes.
 
 ### Drafts
