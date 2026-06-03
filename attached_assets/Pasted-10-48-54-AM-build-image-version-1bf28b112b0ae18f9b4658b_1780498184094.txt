@@ -1,0 +1,27 @@
+10:48:54 AM: build-image version: 1bf28b112b0ae18f9b4658b4468486ed6da3481a (noble-new-builds)
+10:48:54 AM: buildbot version: 1bf28b112b0ae18f9b4658b4468486ed6da3481a
+10:48:55 AM: Fetching cached dependencies
+10:48:55 AM: Failed to fetch cache, continuing with build
+10:48:55 AM: Starting to prepare the repo for build
+10:48:55 AM: No cached dependencies found. Cloning fresh repo
+10:48:55 AM: git clone --filter=blob:none https://github.com/kaypeter87/kaypeter.com
+10:48:55 AM: Preparing Git Reference refs/heads/main
+10:48:56 AM: Installing dependencies
+10:48:56 AM: mise ~/.config/mise/config.toml tools: python@3.14.4
+10:48:56 AM: mise ~/.config/mise/config.toml tools: ruby@4.0.3
+10:48:57 AM: mise ~/.config/mise/config.toml tools: go@1.26.2
+10:48:57 AM: Now using node v24.16.0 (npm v11.13.0)
+10:48:57 AM: Enabling Corepack
+10:48:57 AM: WARNING: The environment variable 'NODE_ENV' is set to 'production'. Any 'devDependencies' in package.json will not be installed
+10:48:58 AM: Found pnpm version (10.30.3) that doesn't match expected (9)
+Preparing pnpm@9 for immediate activation...
+10:48:59 AM: Failed during stage 'Install dependencies': dependency_installation script returned non-zero exit code: 1
+10:48:59 AM: pnpm workspaces detected
+10:48:59 AM: Installing npm packages using pnpm version 9.15.9
+10:48:59 AM: (node:1072) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+10:48:59 AM: (Use `node --trace-deprecation ...` to show where the warning was created)
+10:48:59 AM: Scope: all 9 workspace projects
+10:48:59 AM:  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+10:48:59 AM: Update your lockfile using "pnpm install --no-frozen-lockfile"
+10:48:59 AM: Error during pnpm install
+10:48:59 AM: Failing build: Failed to install dependencies
