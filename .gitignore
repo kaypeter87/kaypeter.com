@@ -47,6 +47,3 @@ Thumbs.db
 # Replit
 .cache/
 .local/
-
-# Vercel deploy output shim
-/public
