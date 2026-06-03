@@ -1,0 +1,1 @@
+- [Vercel monorepo output dir](vercel-monorepo-output-dir.md) — "No Output Directory named public" despite correct vercel.json; fix = copy build output to repo-root /public, set outputDirectory: public.
